@@ -19,20 +19,26 @@ namespace FileConcatenator
 			{
 				Console.Clear();
 				Console.WriteLine($"Current Directory: {currentDirectory}");
+				Console.WriteLine();
+
 				Console.WriteLine("Directories:");
 				DisplayDirectories(currentDirectory);
+				Console.WriteLine();
 
 				Console.WriteLine("Files:");
 				DisplayFiles(currentDirectory);
+				Console.WriteLine();
 
-				Console.WriteLine("\nCommands:");
+				Console.WriteLine("Commands:");
 				Console.WriteLine("[cd <directory>] - Change Directory");
 				Console.WriteLine("[1] - Concatenate .cs files and copy to clipboard");
 				Console.WriteLine("[2] - Set Base Path");
 				Console.WriteLine("[3] - Exit application");
+				Console.WriteLine();
 
-				Console.Write("\nEnter command: ");
+				Console.Write("Enter command: ");
 				string command = Console.ReadLine();
+				Console.WriteLine();
 
 				if (command.StartsWith("cd"))
 				{
@@ -46,7 +52,8 @@ namespace FileConcatenator
 						}
 						else
 						{
-							Console.WriteLine("Directory does not exist.");
+							Console.WriteLine("Error: Directory does not exist.");
+							Console.WriteLine();
 						}
 					}
 				}
@@ -54,6 +61,7 @@ namespace FileConcatenator
 				{
 					ConcatenateFilesAndCopyToClipboard(currentDirectory);
 					Console.WriteLine("Files concatenated and copied to clipboard.");
+					Console.WriteLine();
 				}
 				else if (command == "2")
 				{
@@ -68,8 +76,9 @@ namespace FileConcatenator
 					}
 					else
 					{
-						Console.WriteLine("Directory does not exist.");
+						Console.WriteLine("Error: Directory does not exist.");
 					}
+					Console.WriteLine();
 				}
 				else if (command == "3")
 				{
@@ -77,8 +86,10 @@ namespace FileConcatenator
 				}
 				else
 				{
-					Console.WriteLine("Invalid command.");
+					Console.WriteLine("Error: Invalid command.");
+					Console.WriteLine();
 				}
+				Console.WriteLine("Press any key to continue...");
 				Console.ReadKey();
 			}
 		}
@@ -95,6 +106,7 @@ namespace FileConcatenator
 			catch (Exception ex)
 			{
 				Console.WriteLine($"Error: {ex.Message}");
+				Console.WriteLine();
 			}
 		}
 
@@ -110,6 +122,7 @@ namespace FileConcatenator
 			catch (Exception ex)
 			{
 				Console.WriteLine($"Error: {ex.Message}");
+				Console.WriteLine();
 			}
 		}
 
@@ -143,6 +156,7 @@ namespace FileConcatenator
 		static string LoadBasePath()
 		{
 			Console.WriteLine($"Loading base path from: {configFilePath}");
+			Console.WriteLine();
 
 			if (File.Exists(configFilePath))
 			{
@@ -157,10 +171,12 @@ namespace FileConcatenator
 				catch (Exception ex)
 				{
 					Console.WriteLine($"Error reading config file: {ex.Message}");
+					Console.WriteLine();
 				}
 			}
 
 			Console.WriteLine("Using default base path.");
+			Console.WriteLine();
 			return GetInitialBasePath();
 		}
 
@@ -169,6 +185,7 @@ namespace FileConcatenator
 			var config = new Config { BasePath = basePath };
 			File.WriteAllText(configFilePath, JsonConvert.SerializeObject(config, Formatting.Indented));
 			Console.WriteLine($"Saved base path to: {configFilePath}");
+			Console.WriteLine();
 		}
 
 		class Config
