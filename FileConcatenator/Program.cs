@@ -1,15 +1,19 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using Newtonsoft.Json;
 using TextCopy;
 
 namespace FileConcatenator
 {
 	class Program
 	{
+		static string configFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");
+		static string baseDirectory = LoadBasePath();
+
 		static void Main(string[] args)
 		{
-			string currentDirectory = Directory.GetCurrentDirectory();
+			string currentDirectory = baseDirectory;
 
 			while (true)
 			{
@@ -24,7 +28,8 @@ namespace FileConcatenator
 				Console.WriteLine("\nCommands:");
 				Console.WriteLine("[cd <directory>] - Change Directory");
 				Console.WriteLine("[1] - Concatenate .cs files and copy to clipboard");
-				Console.WriteLine("[2] - Exit application");
+				Console.WriteLine("[2] - Set Base Path");
+				Console.WriteLine("[3] - Exit application");
 
 				Console.Write("\nEnter command: ");
 				string command = Console.ReadLine();
@@ -34,7 +39,7 @@ namespace FileConcatenator
 					string[] parts = command.Split(' ', 2);
 					if (parts.Length == 2)
 					{
-						string newDirectory = Path.Combine(currentDirectory, parts[1]);
+						string newDirectory = Path.GetFullPath(Path.Combine(currentDirectory, parts[1]));
 						if (Directory.Exists(newDirectory))
 						{
 							currentDirectory = newDirectory;
@@ -42,7 +47,6 @@ namespace FileConcatenator
 						else
 						{
 							Console.WriteLine("Directory does not exist.");
-							Console.ReadKey();
 						}
 					}
 				}
@@ -50,17 +54,32 @@ namespace FileConcatenator
 				{
 					ConcatenateFilesAndCopyToClipboard(currentDirectory);
 					Console.WriteLine("Files concatenated and copied to clipboard.");
-					Console.ReadKey();
 				}
 				else if (command == "2")
+				{
+					Console.Write("Enter new base path: ");
+					string newBasePath = Console.ReadLine();
+					if (Directory.Exists(newBasePath))
+					{
+						baseDirectory = newBasePath;
+						SaveBasePath(baseDirectory);
+						currentDirectory = baseDirectory;
+						Console.WriteLine("Base path set successfully.");
+					}
+					else
+					{
+						Console.WriteLine("Directory does not exist.");
+					}
+				}
+				else if (command == "3")
 				{
 					break;
 				}
 				else
 				{
 					Console.WriteLine("Invalid command.");
-					Console.ReadKey();
 				}
+				Console.ReadKey();
 			}
 		}
 
@@ -106,6 +125,55 @@ namespace FileConcatenator
 			}
 
 			ClipboardService.SetText(sb.ToString());
+		}
+
+		static string GetInitialBasePath()
+		{
+			if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+			{
+				var drives = DriveInfo.GetDrives();
+				return drives.Length > 0 ? drives[0].RootDirectory.FullName : "/";
+			}
+			else
+			{
+				return "/";
+			}
+		}
+
+		static string LoadBasePath()
+		{
+			Console.WriteLine($"Loading base path from: {configFilePath}");
+
+			if (File.Exists(configFilePath))
+			{
+				try
+				{
+					var config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(configFilePath));
+					if (config != null && !string.IsNullOrWhiteSpace(config.BasePath) && Directory.Exists(config.BasePath))
+					{
+						return config.BasePath;
+					}
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine($"Error reading config file: {ex.Message}");
+				}
+			}
+
+			Console.WriteLine("Using default base path.");
+			return GetInitialBasePath();
+		}
+
+		static void SaveBasePath(string basePath)
+		{
+			var config = new Config { BasePath = basePath };
+			File.WriteAllText(configFilePath, JsonConvert.SerializeObject(config, Formatting.Indented));
+			Console.WriteLine($"Saved base path to: {configFilePath}");
+		}
+
+		class Config
+		{
+			public string BasePath { get; set; }
 		}
 	}
 }
