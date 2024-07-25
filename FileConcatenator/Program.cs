@@ -11,6 +11,7 @@ namespace FileConcatenator
 	{
 		static string configFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");
 		static Config config;
+		static bool isNewConfig = false;
 
 		static void Main(string[] args)
 		{
@@ -35,9 +36,8 @@ namespace FileConcatenator
 				Console.WriteLine("Commands:");
 				Console.WriteLine("[cd <directory>] - Change Directory");
 				Console.WriteLine("[1] - Concatenate files and copy to clipboard");
-				Console.WriteLine("[2] - Set Base Path");
-				Console.WriteLine("[3] - Configure Settings");
-				Console.WriteLine("[4] - Exit application");
+				Console.WriteLine("[2] - Configure Settings");
+				Console.WriteLine("[3] - Exit application");
 				Console.WriteLine();
 
 				Console.Write("Enter command: ");
@@ -69,26 +69,10 @@ namespace FileConcatenator
 				}
 				else if (command == "2")
 				{
-					Console.Write("Enter new base path: ");
-					string newBasePath = Console.ReadLine();
-					if (Directory.Exists(newBasePath))
-					{
-						config.BasePath = newBasePath;
-						SaveConfig();
-						currentDirectory = config.BasePath;
-						Console.WriteLine("Base path set successfully.");
-					}
-					else
-					{
-						Console.WriteLine("Error: Directory does not exist.");
-					}
-					Console.WriteLine();
+					ConfigureSettings();
+					currentDirectory = config.BasePath; // Update current directory after configuration
 				}
 				else if (command == "3")
-				{
-					ConfigureSettings();
-				}
-				else if (command == "4")
 				{
 					break;
 				}
@@ -115,11 +99,13 @@ namespace FileConcatenator
 					Console.WriteLine($"Error reading config file: {ex.Message}");
 					config = CreateDefaultConfig();
 					SaveConfig();
+					isNewConfig = true;
 				}
 			}
 			else
 			{
 				config = CreateDefaultConfig();
+				isNewConfig = true;
 				ConfigureSettings(); // Run configuration settings if config is newly created
 				SaveConfig();
 			}
@@ -199,35 +185,54 @@ namespace FileConcatenator
 		static void ConfigureSettings()
 		{
 			Console.WriteLine("Configuration Settings:");
+			Console.WriteLine("[1] Show hidden files: " + (config.ShowHiddenFiles ? "Yes" : "No"));
+			Console.WriteLine("[2] Set Base Path: " + config.BasePath);
+			Console.WriteLine("[3] File types to concatenate: " + string.Join(", ", config.FileTypes));
+			Console.WriteLine("[4] Back to main menu");
+			Console.WriteLine();
 
-			// Show hidden files
-			Console.Write("Show hidden files? (yes/no): ");
-			string showHiddenFiles = Console.ReadLine().ToLower();
-			config.ShowHiddenFiles = showHiddenFiles == "yes";
+			Console.Write("Enter the number of the setting you want to change: ");
+			string choice = Console.ReadLine();
+			Console.WriteLine();
 
-			// Set base path
-			Console.Write("Enter new base path: ");
-			string newBasePath = Console.ReadLine();
-			if (Directory.Exists(newBasePath))
+			switch (choice)
 			{
-				config.BasePath = newBasePath;
+				case "1":
+					Console.Write("Show hidden files? (yes/no): ");
+					string showHiddenFiles = Console.ReadLine().ToLower();
+					config.ShowHiddenFiles = showHiddenFiles == "yes";
+					SaveConfig();
+					break;
+				case "2":
+					Console.Write("Enter new base path: ");
+					string newBasePath = Console.ReadLine();
+					if (Directory.Exists(newBasePath))
+					{
+						config.BasePath = newBasePath;
+						SaveConfig();
+					}
+					else
+					{
+						Console.WriteLine("Error: Directory does not exist.");
+					}
+					break;
+				case "3":
+					ConfigureFileTypes();
+					SaveConfig();
+					break;
+				case "4":
+					break;
+				default:
+					Console.WriteLine("Invalid choice.");
+					break;
 			}
-			else
-			{
-				Console.WriteLine("Error: Directory does not exist. Keeping the old base path.");
-			}
-
-			// Configure file types
-			ConfigureFileTypes();
-
-			SaveConfig();
 		}
 
 		static void ConfigureFileTypes()
 		{
 			Console.WriteLine("File Types Configuration:");
 			Console.WriteLine("[1] All file types");
-			Console.WriteLine("[2] Common coding file types (.json, .txt, .ts, .js, .cs, etc.)");
+			Console.WriteLine("[2] Common coding file types (.ts, .js, .cs, etc.)");
 			Console.WriteLine("[3] Custom file types");
 			Console.WriteLine();
 
@@ -242,7 +247,7 @@ namespace FileConcatenator
 					config.FileTypes = new string[] { "*.*" };
 					break;
 				case "2":
-					config.FileTypes = new string[] { "*.json", "*.txt", "*.ts", "*.js", "*.cs", "*.html", "*.css", "*.xml" };
+					config.FileTypes = new string[] { "*.ts", "*.js", "*.cs", "*.html", "*.css" };
 					break;
 				case "3":
 					Console.Write("Enter the file types to concatenate (comma separated, e.g., *.cs,*.js): ");
