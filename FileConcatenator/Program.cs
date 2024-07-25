@@ -149,7 +149,7 @@ namespace FileConcatenator
 			{
 				foreach (var dir in Directory.GetDirectories(path))
 				{
-					if (!config.ShowHiddenFiles && Path.GetFileName(dir).StartsWith("."))
+					if (!config.ShowHiddenFiles && (new DirectoryInfo(dir).Attributes & FileAttributes.Hidden) != 0)
 						continue;
 					Console.WriteLine($"[D] {Path.GetFileName(dir)}");
 				}
@@ -167,7 +167,7 @@ namespace FileConcatenator
 			{
 				foreach (var file in Directory.GetFiles(path))
 				{
-					if (!config.ShowHiddenFiles && Path.GetFileName(file).StartsWith("."))
+					if (!config.ShowHiddenFiles && (new FileInfo(file).Attributes & FileAttributes.Hidden) != 0)
 						continue;
 					Console.WriteLine($"[F] {Path.GetFileName(file)}");
 				}
@@ -199,46 +199,28 @@ namespace FileConcatenator
 		static void ConfigureSettings()
 		{
 			Console.WriteLine("Configuration Settings:");
-			Console.WriteLine("[1] Show hidden files: " + (config.ShowHiddenFiles ? "Yes" : "No"));
-			Console.WriteLine("[2] Set Base Path: " + config.BasePath);
-			Console.WriteLine("[3] File types to concatenate: " + string.Join(", ", config.FileTypes));
-			Console.WriteLine("[4] Back to main menu");
-			Console.WriteLine();
 
-			Console.Write("Enter the number of the setting you want to change: ");
-			string choice = Console.ReadLine();
-			Console.WriteLine();
+			// Show hidden files
+			Console.Write("Show hidden files? (yes/no): ");
+			string showHiddenFiles = Console.ReadLine().ToLower();
+			config.ShowHiddenFiles = showHiddenFiles == "yes";
 
-			switch (choice)
+			// Set base path
+			Console.Write("Enter new base path: ");
+			string newBasePath = Console.ReadLine();
+			if (Directory.Exists(newBasePath))
 			{
-				case "1":
-					Console.Write("Show hidden files? (yes/no): ");
-					string showHiddenFiles = Console.ReadLine().ToLower();
-					config.ShowHiddenFiles = showHiddenFiles == "yes";
-					SaveConfig();
-					break;
-				case "2":
-					Console.Write("Enter new base path: ");
-					string newBasePath = Console.ReadLine();
-					if (Directory.Exists(newBasePath))
-					{
-						config.BasePath = newBasePath;
-						SaveConfig();
-					}
-					else
-					{
-						Console.WriteLine("Error: Directory does not exist.");
-					}
-					break;
-				case "3":
-					ConfigureFileTypes();
-					break;
-				case "4":
-					break;
-				default:
-					Console.WriteLine("Invalid choice.");
-					break;
+				config.BasePath = newBasePath;
 			}
+			else
+			{
+				Console.WriteLine("Error: Directory does not exist. Keeping the old base path.");
+			}
+
+			// Configure file types
+			ConfigureFileTypes();
+
+			SaveConfig();
 		}
 
 		static void ConfigureFileTypes()
@@ -268,10 +250,9 @@ namespace FileConcatenator
 					config.FileTypes = customFileTypes.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray();
 					break;
 				default:
-					Console.WriteLine("Invalid choice.");
+					Console.WriteLine("Invalid choice. Keeping the old file types.");
 					break;
 			}
-			SaveConfig();
 		}
 
 		static string GetInitialBasePath()
