@@ -174,6 +174,7 @@ namespace FileConcatenator
 				var files = Directory.GetFiles(path, fileType, SearchOption.AllDirectories);
 				foreach (var file in files)
 				{
+					sb.AppendLine($"//{Path.GetFileName(file)}");
 					sb.AppendLine(File.ReadAllText(file));
 					sb.AppendLine();
 				}
