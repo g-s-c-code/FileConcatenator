@@ -23,6 +23,7 @@ namespace FileConcatenator
 			{
 				Console.Clear();
 				Console.WriteLine($"Current Directory: {currentDirectory}");
+				DisplayFileTypes();
 				Console.WriteLine();
 
 				Console.WriteLine("Directories:");
@@ -129,6 +130,11 @@ namespace FileConcatenator
 			Console.WriteLine($"Configuration saved to: {configFilePath}");
 		}
 
+		static void DisplayFileTypes()
+		{
+			Console.WriteLine($"Currently Targeted File Types: {string.Join(", ", config.FileTypes)}");
+		}
+
 		static void DisplayDirectories(string path)
 		{
 			try
@@ -233,7 +239,7 @@ namespace FileConcatenator
 		{
 			Console.WriteLine("File Types Configuration:");
 			Console.WriteLine("[1] All file types");
-			Console.WriteLine("[2] Common coding file types (.ts, .js, .cs, etc.)");
+			Console.WriteLine("[2] Common developer file types (.ts, .js, .cs, etc.)");
 			Console.WriteLine("[3] Custom file types");
 			Console.WriteLine();
 
