@@ -12,6 +12,7 @@ namespace FileConcatenator
 		static string configFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");
 		static Config config;
 		static bool isNewConfig = false;
+		const int ClipboardCharacterLimit = 1000000; // 1 million characters limit for example
 
 		static void Main(string[] args)
 		{
@@ -71,7 +72,7 @@ namespace FileConcatenator
 				else if (command == "2")
 				{
 					ConfigureSettings();
-					currentDirectory = config.BasePath; // Update current directory after configuration
+					currentDirectory = config.BasePath;
 				}
 				else if (command == "3")
 				{
@@ -107,7 +108,7 @@ namespace FileConcatenator
 			{
 				config = CreateDefaultConfig();
 				isNewConfig = true;
-				ConfigureSettings(); // Run configuration settings if config is newly created
+				ConfigureSettings();
 				SaveConfig();
 			}
 		}
@@ -141,16 +142,27 @@ namespace FileConcatenator
 			{
 				foreach (var dir in Directory.GetDirectories(path))
 				{
-					if (!config.ShowHiddenFiles && (new DirectoryInfo(dir).Attributes & FileAttributes.Hidden) != 0)
-						continue;
-					Console.WriteLine($"[D] {Path.GetFileName(dir)}");
+					try
+					{
+						if (!config.ShowHiddenFiles && (new DirectoryInfo(dir).Attributes & FileAttributes.Hidden) != 0)
+							continue;
+						Console.WriteLine($"[D] {Path.GetFileName(dir)}");
+					}
+					catch (UnauthorizedAccessException)
+					{
+						Console.WriteLine($"[D] {Path.GetFileName(dir)} (Access Denied)");
+					}
 				}
+			}
+			catch (UnauthorizedAccessException)
+			{
+				Console.WriteLine($"Error: Access to the path '{path}' is denied.");
 			}
 			catch (Exception ex)
 			{
 				Console.WriteLine($"Error: {ex.Message}");
-				Console.WriteLine();
 			}
+			Console.WriteLine();
 		}
 
 		static void DisplayFiles(string path)
@@ -159,34 +171,73 @@ namespace FileConcatenator
 			{
 				foreach (var file in Directory.GetFiles(path))
 				{
-					if (!config.ShowHiddenFiles && (new FileInfo(file).Attributes & FileAttributes.Hidden) != 0)
-						continue;
-					Console.WriteLine($"[F] {Path.GetFileName(file)}");
+					try
+					{
+						if (!config.ShowHiddenFiles && (new FileInfo(file).Attributes & FileAttributes.Hidden) != 0)
+							continue;
+						Console.WriteLine($"[F] {Path.GetFileName(file)}");
+					}
+					catch (UnauthorizedAccessException)
+					{
+						Console.WriteLine($"[F] {Path.GetFileName(file)} (Access Denied)");
+					}
 				}
+			}
+			catch (UnauthorizedAccessException)
+			{
+				Console.WriteLine($"Error: Access to the path '{path}' is denied.");
 			}
 			catch (Exception ex)
 			{
 				Console.WriteLine($"Error: {ex.Message}");
-				Console.WriteLine();
 			}
+			Console.WriteLine();
 		}
 
 		static void ConcatenateFilesAndCopyToClipboard(string path)
 		{
 			var sb = new StringBuilder();
+			bool accessDeniedFlag = false;
 
 			foreach (var fileType in config.FileTypes)
 			{
-				var files = Directory.GetFiles(path, fileType, SearchOption.AllDirectories);
-				foreach (var file in files)
+				try
 				{
-					sb.AppendLine($"//{Path.GetFileName(file)}");
-					sb.AppendLine(File.ReadAllText(file));
-					sb.AppendLine();
+					var files = Directory.GetFiles(path, fileType, SearchOption.AllDirectories);
+					foreach (var file in files)
+					{
+						try
+						{
+							if (sb.Length > ClipboardCharacterLimit)
+							{
+								Console.WriteLine("Warning: Clipboard character limit reached. Not all files were concatenated.");
+								goto ClipboardCopy;
+							}
+							sb.AppendLine($"//{Path.GetFileName(file)}");
+							sb.AppendLine(File.ReadAllText(file));
+							sb.AppendLine();
+						}
+						catch (UnauthorizedAccessException)
+						{
+							Console.WriteLine($"Error: Access to the file '{file}' is denied.");
+							accessDeniedFlag = true;
+						}
+					}
+				}
+				catch (UnauthorizedAccessException)
+				{
+					Console.WriteLine($"Error: Access to some paths in '{path}' is denied.");
+					accessDeniedFlag = true;
 				}
 			}
 
+		ClipboardCopy:
 			ClipboardService.SetText(sb.ToString());
+
+			if (accessDeniedFlag)
+			{
+				Console.WriteLine("Note: Some files or directories could not be accessed and were skipped.");
+			}
 		}
 
 		static void ConfigureSettings()
