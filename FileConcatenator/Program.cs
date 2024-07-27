@@ -27,6 +27,7 @@ namespace FileConcatenator
 				DisplayFileTypes();
 				Console.WriteLine();
 
+
 				Console.WriteLine("Directories:");
 				DisplayDirectories(currentDirectory);
 				Console.WriteLine();
@@ -88,7 +89,7 @@ namespace FileConcatenator
 			}
 		}
 
-		static void LoadOrCreateConfig()
+		public static void LoadOrCreateConfig()
 		{
 			if (File.Exists(configFilePath))
 			{
