@@ -16,7 +16,7 @@ namespace FileConcatenator
 
 		private static void ConfigureServices(IServiceCollection services)
 		{
-			services.AddSingleton<IUserInterface, ConsoleUI>();
+			services.AddSingleton<IUserInterface, SpectreUI>();
 			services.AddSingleton<ConfigurationService>();
 			services.AddSingleton<FileConcatenationService>();
 			services.AddSingleton<ConfigurationController>();

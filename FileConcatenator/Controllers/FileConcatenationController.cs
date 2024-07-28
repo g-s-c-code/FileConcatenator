@@ -14,20 +14,15 @@ public class FileConcatenationController
 	public void DisplayDirectories(string path)
 	{
 		var directories = _fileConcatenationService.GetDirectories(path);
-		foreach (var dir in directories)
-		{
-			_ui.DisplayMessage(dir);
-		}
+		_ui.DisplayDirectories(directories);
 	}
 
 	public void DisplayFiles(string path)
 	{
 		var files = _fileConcatenationService.GetFiles(path);
-		foreach (var file in files)
-		{
-			_ui.DisplayMessage(file);
-		}
+		_ui.DisplayFiles(files);
 	}
+
 
 	public void ConcatenateFilesAndCopyToClipboard(string path)
 	{
