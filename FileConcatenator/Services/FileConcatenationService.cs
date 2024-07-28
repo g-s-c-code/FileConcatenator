@@ -13,9 +13,9 @@ public class FileConcatenationService
 		this.config = config;
 	}
 
-	public void DisplayFileTypes()
+	public string GetTargetedFileTypes()
 	{
-		Console.WriteLine($"Currently Targeted File Types: {string.Join(", ", config.FileTypes)}");
+		return string.Join(", ", config.FileTypes);
 	}
 
 	public void DisplayDirectories(string path)

@@ -8,34 +8,26 @@ internal class Program
 	{
 		var configService = new ConfigurationService();
 		var fileConcatenationService = new FileConcatenationService(configService.Config);
+		IUserInterface ui = new ConsoleUI();
 
 		string currentDirectory = configService.Config.BasePath;
 
 		while (true)
 		{
-			Console.Clear();
-			Console.WriteLine($"Current Directory: {currentDirectory}");
-			fileConcatenationService.DisplayFileTypes();
-			Console.WriteLine();
-
-			Console.WriteLine("Directories:");
+			ui.Clear();
+			ui.DisplayMessage($"Current Directory: {currentDirectory}");
+			ui.DisplayMessage($"Current Targeted File Types: {fileConcatenationService.GetTargetedFileTypes()}");
+			ui.DisplayMessage("Directories:");
 			fileConcatenationService.DisplayDirectories(currentDirectory);
-			Console.WriteLine();
-
-			Console.WriteLine("Files:");
+			ui.DisplayMessage("Files:");
 			fileConcatenationService.DisplayFiles(currentDirectory);
-			Console.WriteLine();
-
-			Console.WriteLine("Commands:");
-			Console.WriteLine("[cd <directory>] - Change Directory");
-			Console.WriteLine("[1] - Concatenate files and copy to clipboard");
-			Console.WriteLine("[2] - Configure Settings");
-			Console.WriteLine("[3] - Exit application");
-			Console.WriteLine();
-
-			Console.Write("Enter command: ");
-			string command = Console.ReadLine();
-			Console.WriteLine();
+			ui.DisplayMessage("Commands:");
+			ui.DisplayMessage("[cd <directory>] - Change Directory");
+			ui.DisplayMessage("[1] - Concatenate files and copy to clipboard");
+			ui.DisplayMessage("[2] - Configure Settings");
+			ui.DisplayMessage("[3] - Exit application");
+			ui.DisplayMessage("Enter command: ");
+			string command = ui.GetInput();
 
 			if (command.StartsWith("cd"))
 			{
@@ -49,21 +41,23 @@ internal class Program
 					}
 					else
 					{
-						Console.WriteLine("Error: Directory does not exist.");
-						Console.WriteLine();
+						ui.DisplayMessage("Error: Directory does not exist.");
 					}
 				}
 			}
 			else if (command == "1")
 			{
 				fileConcatenationService.ConcatenateFilesAndCopyToClipboard(currentDirectory);
-				Console.WriteLine("Files concatenated and copied to clipboard.");
-				Console.WriteLine();
+				//Do not simply run the following - conditional error message if length is exceeded
+				ui.DisplayMessage("Files concatenated and copied to clipboard.");
+				ui.DisplayMessage("Press any key to continue.");
+				ui.GetInput();
 			}
 			else if (command == "2")
 			{
 				configService.ConfigureSettings();
 				currentDirectory = configService.Config.BasePath;
+				ui.GetInput();
 			}
 			else if (command == "3")
 			{
@@ -71,11 +65,8 @@ internal class Program
 			}
 			else
 			{
-				Console.WriteLine("Error: Invalid command.");
-				Console.WriteLine();
+				ui.DisplayMessage("Error: Invalid command.");
 			}
-			Console.WriteLine("Press any key to continue...");
-			Console.ReadKey();
 		}
 	}
 }

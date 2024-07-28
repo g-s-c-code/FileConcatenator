@@ -6,8 +6,8 @@ namespace FileConcatenator.Services;
 public class ConfigurationService
 {
 	private readonly string configFilePath;
-	public Configuration Config { get; private set; }
 	public bool IsNewConfig { get; private set; }
+	public Configuration Config { get; set; }
 
 	public ConfigurationService()
 	{
