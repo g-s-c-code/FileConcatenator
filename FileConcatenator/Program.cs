@@ -1,342 +1,81 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Text;
-using Newtonsoft.Json;
-using TextCopy;
+﻿using FileConcatenator.Services;
 
-namespace FileConcatenator
+namespace FileConcatenator;
+
+internal class Program
 {
-	class Program
+	private static void Main(string[] args)
 	{
-		static string configFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");
-		static Config config;
-		static bool isNewConfig = false;
-		const int ClipboardCharacterLimit = 1000000; // 1 million characters limit for example
+		var configService = new ConfigurationService();
+		var fileConcatenationService = new FileConcatenationService(configService.Config);
 
-		static void Main(string[] args)
+		string currentDirectory = configService.Config.BasePath;
+
+		while (true)
 		{
-			LoadOrCreateConfig();
-
-			string currentDirectory = config.BasePath;
-
-			while (true)
-			{
-				Console.Clear();
-				Console.WriteLine($"Current Directory: {currentDirectory}");
-				DisplayFileTypes();
-				Console.WriteLine();
-
-
-				Console.WriteLine("Directories:");
-				DisplayDirectories(currentDirectory);
-				Console.WriteLine();
-
-				Console.WriteLine("Files:");
-				DisplayFiles(currentDirectory);
-				Console.WriteLine();
-
-				Console.WriteLine("Commands:");
-				Console.WriteLine("[cd <directory>] - Change Directory");
-				Console.WriteLine("[1] - Concatenate files and copy to clipboard");
-				Console.WriteLine("[2] - Configure Settings");
-				Console.WriteLine("[3] - Exit application");
-				Console.WriteLine();
-
-				Console.Write("Enter command: ");
-				string command = Console.ReadLine();
-				Console.WriteLine();
-
-				if (command.StartsWith("cd"))
-				{
-					string[] parts = command.Split(' ', 2);
-					if (parts.Length == 2)
-					{
-						string newDirectory = Path.GetFullPath(Path.Combine(currentDirectory, parts[1]));
-						if (Directory.Exists(newDirectory))
-						{
-							currentDirectory = newDirectory;
-						}
-						else
-						{
-							Console.WriteLine("Error: Directory does not exist.");
-							Console.WriteLine();
-						}
-					}
-				}
-				else if (command == "1")
-				{
-					ConcatenateFilesAndCopyToClipboard(currentDirectory);
-					Console.WriteLine("Files concatenated and copied to clipboard.");
-					Console.WriteLine();
-				}
-				else if (command == "2")
-				{
-					ConfigureSettings();
-					currentDirectory = config.BasePath;
-				}
-				else if (command == "3")
-				{
-					break;
-				}
-				else
-				{
-					Console.WriteLine("Error: Invalid command.");
-					Console.WriteLine();
-				}
-				Console.WriteLine("Press any key to continue...");
-				Console.ReadKey();
-			}
-		}
-
-		public static void LoadOrCreateConfig()
-		{
-			if (File.Exists(configFilePath))
-			{
-				try
-				{
-					config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(configFilePath));
-				}
-				catch (Exception ex)
-				{
-					Console.WriteLine($"Error reading config file: {ex.Message}");
-					config = CreateDefaultConfig();
-					SaveConfig();
-					isNewConfig = true;
-				}
-			}
-			else
-			{
-				config = CreateDefaultConfig();
-				isNewConfig = true;
-				ConfigureSettings();
-				SaveConfig();
-			}
-		}
-
-		static Config CreateDefaultConfig()
-		{
-			Console.WriteLine("Creating default configuration...");
-			var newConfig = new Config
-			{
-				BasePath = GetInitialBasePath(),
-				ShowHiddenFiles = false,
-				FileTypes = new string[] { "*.cs" }
-			};
-			return newConfig;
-		}
-
-		static void SaveConfig()
-		{
-			File.WriteAllText(configFilePath, JsonConvert.SerializeObject(config, Formatting.Indented));
-			Console.WriteLine($"Configuration saved to: {configFilePath}");
-		}
-
-		static void DisplayFileTypes()
-		{
-			Console.WriteLine($"Currently Targeted File Types: {string.Join(", ", config.FileTypes)}");
-		}
-
-		static void DisplayDirectories(string path)
-		{
-			try
-			{
-				foreach (var dir in Directory.GetDirectories(path))
-				{
-					try
-					{
-						if (!config.ShowHiddenFiles && (new DirectoryInfo(dir).Attributes & FileAttributes.Hidden) != 0)
-							continue;
-						Console.WriteLine($"[D] {Path.GetFileName(dir)}");
-					}
-					catch (UnauthorizedAccessException)
-					{
-						Console.WriteLine($"[D] {Path.GetFileName(dir)} (Access Denied)");
-					}
-				}
-			}
-			catch (UnauthorizedAccessException)
-			{
-				Console.WriteLine($"Error: Access to the path '{path}' is denied.");
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error: {ex.Message}");
-			}
-			Console.WriteLine();
-		}
-
-		static void DisplayFiles(string path)
-		{
-			try
-			{
-				foreach (var file in Directory.GetFiles(path))
-				{
-					try
-					{
-						if (!config.ShowHiddenFiles && (new FileInfo(file).Attributes & FileAttributes.Hidden) != 0)
-							continue;
-						Console.WriteLine($"[F] {Path.GetFileName(file)}");
-					}
-					catch (UnauthorizedAccessException)
-					{
-						Console.WriteLine($"[F] {Path.GetFileName(file)} (Access Denied)");
-					}
-				}
-			}
-			catch (UnauthorizedAccessException)
-			{
-				Console.WriteLine($"Error: Access to the path '{path}' is denied.");
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error: {ex.Message}");
-			}
-			Console.WriteLine();
-		}
-
-		static void ConcatenateFilesAndCopyToClipboard(string path)
-		{
-			var sb = new StringBuilder();
-			bool accessDeniedFlag = false;
-
-			foreach (var fileType in config.FileTypes)
-			{
-				try
-				{
-					var files = Directory.GetFiles(path, fileType, SearchOption.AllDirectories);
-					foreach (var file in files)
-					{
-						try
-						{
-							if (sb.Length > ClipboardCharacterLimit)
-							{
-								Console.WriteLine("Warning: Clipboard character limit reached. Not all files were concatenated.");
-								goto ClipboardCopy;
-							}
-							sb.AppendLine($"//{Path.GetFileName(file)}");
-							sb.AppendLine(File.ReadAllText(file));
-							sb.AppendLine();
-						}
-						catch (UnauthorizedAccessException)
-						{
-							Console.WriteLine($"Error: Access to the file '{file}' is denied.");
-							accessDeniedFlag = true;
-						}
-					}
-				}
-				catch (UnauthorizedAccessException)
-				{
-					Console.WriteLine($"Error: Access to some paths in '{path}' is denied.");
-					accessDeniedFlag = true;
-				}
-			}
-
-		ClipboardCopy:
-			ClipboardService.SetText(sb.ToString());
-
-			if (accessDeniedFlag)
-			{
-				Console.WriteLine("Note: Some files or directories could not be accessed and were skipped.");
-			}
-		}
-
-		static void ConfigureSettings()
-		{
-			Console.WriteLine("Configuration Settings:");
-			Console.WriteLine("[1] Show hidden files: " + (config.ShowHiddenFiles ? "Yes" : "No"));
-			Console.WriteLine("[2] Set Base Path: " + config.BasePath);
-			Console.WriteLine("[3] File types to concatenate: " + string.Join(", ", config.FileTypes));
-			Console.WriteLine("[4] Back to main menu");
+			Console.Clear();
+			Console.WriteLine($"Current Directory: {currentDirectory}");
+			fileConcatenationService.DisplayFileTypes();
 			Console.WriteLine();
 
-			Console.Write("Enter the number of the setting you want to change: ");
-			string choice = Console.ReadLine();
+			Console.WriteLine("Directories:");
+			fileConcatenationService.DisplayDirectories(currentDirectory);
 			Console.WriteLine();
 
-			switch (choice)
+			Console.WriteLine("Files:");
+			fileConcatenationService.DisplayFiles(currentDirectory);
+			Console.WriteLine();
+
+			Console.WriteLine("Commands:");
+			Console.WriteLine("[cd <directory>] - Change Directory");
+			Console.WriteLine("[1] - Concatenate files and copy to clipboard");
+			Console.WriteLine("[2] - Configure Settings");
+			Console.WriteLine("[3] - Exit application");
+			Console.WriteLine();
+
+			Console.Write("Enter command: ");
+			string command = Console.ReadLine();
+			Console.WriteLine();
+
+			if (command.StartsWith("cd"))
 			{
-				case "1":
-					Console.Write("Show hidden files? (yes/no): ");
-					string showHiddenFiles = Console.ReadLine().ToLower();
-					config.ShowHiddenFiles = showHiddenFiles == "yes";
-					SaveConfig();
-					break;
-				case "2":
-					Console.Write("Enter new base path: ");
-					string newBasePath = Console.ReadLine();
-					if (Directory.Exists(newBasePath))
+				string[] parts = command.Split(' ', 2);
+				if (parts.Length == 2)
+				{
+					string newDirectory = Path.GetFullPath(Path.Combine(currentDirectory, parts[1]));
+					if (Directory.Exists(newDirectory))
 					{
-						config.BasePath = newBasePath;
-						SaveConfig();
+						currentDirectory = newDirectory;
 					}
 					else
 					{
 						Console.WriteLine("Error: Directory does not exist.");
+						Console.WriteLine();
 					}
-					break;
-				case "3":
-					ConfigureFileTypes();
-					SaveConfig();
-					break;
-				case "4":
-					break;
-				default:
-					Console.WriteLine("Invalid choice.");
-					break;
+				}
 			}
-		}
-
-		static void ConfigureFileTypes()
-		{
-			Console.WriteLine("File Types Configuration:");
-			Console.WriteLine("[1] All file types");
-			Console.WriteLine("[2] Common developer file types (.ts, .js, .cs, etc.)");
-			Console.WriteLine("[3] Custom file types");
-			Console.WriteLine();
-
-			Console.Write("Enter the number of the option you want to choose: ");
-			string choice = Console.ReadLine();
-			Console.WriteLine();
-
-			switch (choice)
+			else if (command == "1")
 			{
-				case "1":
-					Console.WriteLine("Warning: This may cause a high load on the system.");
-					config.FileTypes = new string[] { "*.*" };
-					break;
-				case "2":
-					config.FileTypes = new string[] { "*.ts", "*.js", "*.cs", "*.html", "*.css" };
-					break;
-				case "3":
-					Console.Write("Enter the file types to concatenate (comma separated, e.g., *.cs,*.js): ");
-					string customFileTypes = Console.ReadLine();
-					config.FileTypes = customFileTypes.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray();
-					break;
-				default:
-					Console.WriteLine("Invalid choice. Keeping the old file types.");
-					break;
+				fileConcatenationService.ConcatenateFilesAndCopyToClipboard(currentDirectory);
+				Console.WriteLine("Files concatenated and copied to clipboard.");
+				Console.WriteLine();
 			}
-		}
-
-		static string GetInitialBasePath()
-		{
-			if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+			else if (command == "2")
 			{
-				var drives = DriveInfo.GetDrives();
-				return drives.Length > 0 ? drives[0].RootDirectory.FullName : "/";
+				configService.ConfigureSettings();
+				currentDirectory = configService.Config.BasePath;
+			}
+			else if (command == "3")
+			{
+				break;
 			}
 			else
 			{
-				return "/";
+				Console.WriteLine("Error: Invalid command.");
+				Console.WriteLine();
 			}
-		}
-
-		class Config
-		{
-			public string BasePath { get; set; }
-			public bool ShowHiddenFiles { get; set; }
-			public string[] FileTypes { get; set; }
+			Console.WriteLine("Press any key to continue...");
+			Console.ReadKey();
 		}
 	}
 }
