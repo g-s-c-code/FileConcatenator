@@ -1,4 +1,4 @@
-﻿namespace FileConcatenator;
+﻿using FileConcatenator;
 
 public class ProgramController
 {
@@ -19,13 +19,14 @@ public class ProgramController
 
 	public void Run()
 	{
-		string currentDirectory = _configurationService.GetBaseDirectoryPath();
-
 		while (true)
 		{
+			string currentDirectory = _configurationService.GetBaseDirectoryPath();
+			string targetedFileTypes = _configurationService.GetTargetedFileTypes();
+
 			_ui.Clear();
 			_ui.DisplayMessage($"Current Directory: {currentDirectory}");
-			_ui.DisplayMessage($"Current Targeted File Types: {_configurationService.GetTargetedFileTypes()}");
+			_ui.DisplayMessage($"Current Targeted File Types: {targetedFileTypes}");
 			_ui.DisplayMessage("Directories:");
 			_fileConcatenationController.DisplayDirectories(currentDirectory);
 			_ui.DisplayMessage("Files:");
@@ -46,7 +47,7 @@ public class ProgramController
 					string newDirectory = Path.GetFullPath(Path.Combine(currentDirectory, parts[1]));
 					if (Directory.Exists(newDirectory))
 					{
-						currentDirectory = newDirectory;
+						_configurationService.SetBaseDirectoryPath(newDirectory);
 					}
 					else
 					{
@@ -63,7 +64,6 @@ public class ProgramController
 			else if (command == "2")
 			{
 				_configurationController.ConfigureSettings();
-				currentDirectory = _configurationService.GetBaseDirectoryPath();
 			}
 			else if (command == "3")
 			{

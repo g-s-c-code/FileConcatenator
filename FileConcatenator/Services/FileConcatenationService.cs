@@ -5,11 +5,11 @@ namespace FileConcatenator;
 
 public class FileConcatenationService
 {
-	private readonly Configuration _configuration;
+	private readonly ConfigurationService _configService;
 
-	public FileConcatenationService(Configuration configuration)
+	public FileConcatenationService(ConfigurationService configService)
 	{
-		_configuration = configuration;
+		_configService = configService;
 	}
 
 	public IEnumerable<string> GetDirectories(string path)
@@ -19,7 +19,7 @@ public class FileConcatenationService
 		{
 			foreach (var dir in Directory.GetDirectories(path))
 			{
-				if (!_configuration.ShowHiddenFiles && (new DirectoryInfo(dir).Attributes & FileAttributes.Hidden) != 0)
+				if (!_configService.GetShowHiddenFiles() && (new DirectoryInfo(dir).Attributes & FileAttributes.Hidden) != 0)
 				{
 					continue;
 				}
@@ -44,7 +44,7 @@ public class FileConcatenationService
 		{
 			foreach (var file in Directory.GetFiles(path))
 			{
-				if (!_configuration.ShowHiddenFiles && (new FileInfo(file).Attributes & FileAttributes.Hidden) != 0)
+				if (!_configService.GetShowHiddenFiles() && (new FileInfo(file).Attributes & FileAttributes.Hidden) != 0)
 				{
 					continue;
 				}
@@ -67,7 +67,7 @@ public class FileConcatenationService
 		var sb = new StringBuilder();
 		bool accessDeniedFlag = false;
 
-		foreach (var fileType in _configuration.FileTypes.Split(','))
+		foreach (var fileType in _configService.GetTargetedFileTypes().Split(','))
 		{
 			try
 			{
@@ -76,7 +76,7 @@ public class FileConcatenationService
 				{
 					try
 					{
-						if (sb.Length > _configuration.ClipboardCharacterLimit)
+						if (sb.Length > _configService.GetClipboardCharacterLimit())
 						{
 							return (false, "Warning: Clipboard character limit reached. Not all files were concatenated.");
 						}

@@ -1,16 +1,27 @@
-﻿namespace FileConcatenator;
+﻿using Microsoft.Extensions.DependencyInjection;
 
-internal class Program
+namespace FileConcatenator
 {
-	private static void Main(string[] args)
+	internal class Program
 	{
-		IUserInterface ui = new ConsoleUI();
-		var configService = new ConfigurationService();
-		var fileConcatenationService = new FileConcatenationService(configService.LoadOrCreateConfig());
-		var fileConcatenationController = new FileConcatenationController(ui, fileConcatenationService);
-		var configurationController = new ConfigurationController(ui);
-		var programController = new ProgramController(ui, configurationController, configService, fileConcatenationController, fileConcatenationService);
+		private static void Main(string[] args)
+		{
+			var serviceCollection = new ServiceCollection();
+			ConfigureServices(serviceCollection);
+			var serviceProvider = serviceCollection.BuildServiceProvider();
 
-		programController.Run();
+			var programController = serviceProvider.GetService<ProgramController>();
+			programController?.Run();
+		}
+
+		private static void ConfigureServices(IServiceCollection services)
+		{
+			services.AddSingleton<IUserInterface, ConsoleUI>();
+			services.AddSingleton<ConfigurationService>();
+			services.AddSingleton<FileConcatenationService>();
+			services.AddSingleton<ConfigurationController>();
+			services.AddSingleton<FileConcatenationController>();
+			services.AddSingleton<ProgramController>();
+		}
 	}
 }

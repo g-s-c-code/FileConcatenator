@@ -5,10 +5,10 @@ public class ConfigurationController
 	private readonly IUserInterface _ui;
 	private readonly ConfigurationService _configService;
 
-	public ConfigurationController(IUserInterface ui)
+	public ConfigurationController(IUserInterface ui, ConfigurationService configService)
 	{
 		_ui = ui;
-		_configService = new ConfigurationService();
+		_configService = configService;
 	}
 
 	public void ConfigureSettings()
