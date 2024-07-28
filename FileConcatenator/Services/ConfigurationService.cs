@@ -1,7 +1,6 @@
-﻿using FileConcatenator.Models;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
-namespace FileConcatenator.Services;
+namespace FileConcatenator;
 
 public class ConfigurationService
 {

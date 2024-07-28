@@ -1,8 +1,7 @@
 ﻿using System.Text;
-using FileConcatenator.Models;
 using TextCopy;
 
-namespace FileConcatenator.Services;
+namespace FileConcatenator;
 
 public class FileConcatenationService
 {

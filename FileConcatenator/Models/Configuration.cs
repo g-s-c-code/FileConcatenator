@@ -1,4 +1,4 @@
-﻿namespace FileConcatenator.Models;
+﻿namespace FileConcatenator;
 
 public class Configuration
 {

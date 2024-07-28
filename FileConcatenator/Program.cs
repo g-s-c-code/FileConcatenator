@@ -1,6 +1,4 @@
-﻿using FileConcatenator.Services;
-
-namespace FileConcatenator;
+﻿namespace FileConcatenator;
 
 internal class Program
 {
