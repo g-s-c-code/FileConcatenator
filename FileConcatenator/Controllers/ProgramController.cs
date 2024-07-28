@@ -7,6 +7,7 @@ public class ProgramController
 	private readonly ConfigurationService _configurationService;
 	private readonly FileConcatenationController _fileConcatenationController;
 	private readonly FileConcatenationService _fileConcatenationService;
+	private string _currentDirectory;
 
 	public ProgramController(IUserInterface ui, ConfigurationController configurationController, ConfigurationService configurationService, FileConcatenationController fileConcatenationController, FileConcatenationService fileConcatenationService)
 	{
@@ -15,22 +16,22 @@ public class ProgramController
 		_configurationService = configurationService;
 		_fileConcatenationController = fileConcatenationController;
 		_fileConcatenationService = fileConcatenationService;
+		_currentDirectory = _configurationService.GetBaseDirectoryPath();
 	}
 
 	public void Run()
 	{
 		while (true)
 		{
-			string currentDirectory = _configurationService.GetBaseDirectoryPath();
 			string targetedFileTypes = _configurationService.GetTargetedFileTypes();
 
 			_ui.Clear();
-			_ui.DisplayMessage($"Current Directory: {currentDirectory}");
+			_ui.DisplayMessage($"Current Directory: {_currentDirectory}");
 			_ui.DisplayMessage($"Current Targeted File Types: {targetedFileTypes}");
 			_ui.DisplayMessage("Directories:");
-			_fileConcatenationController.DisplayDirectories(currentDirectory);
+			_fileConcatenationController.DisplayDirectories(_currentDirectory);
 			_ui.DisplayMessage("Files:");
-			_fileConcatenationController.DisplayFiles(currentDirectory);
+			_fileConcatenationController.DisplayFiles(_currentDirectory);
 			_ui.DisplayMessage("Commands:");
 			_ui.DisplayMessage("[cd <directory>] - Change Directory");
 			_ui.DisplayMessage("[1] - Concatenate files and copy to clipboard");
@@ -44,10 +45,10 @@ public class ProgramController
 				string[] parts = command.Split(' ', 2);
 				if (parts.Length == 2)
 				{
-					string newDirectory = Path.GetFullPath(Path.Combine(currentDirectory, parts[1]));
+					string newDirectory = Path.GetFullPath(Path.Combine(_currentDirectory, parts[1]));
 					if (Directory.Exists(newDirectory))
 					{
-						_configurationService.SetBaseDirectoryPath(newDirectory);
+						_currentDirectory = newDirectory;
 					}
 					else
 					{
@@ -57,13 +58,14 @@ public class ProgramController
 			}
 			else if (command == "1")
 			{
-				_fileConcatenationController.ConcatenateFilesAndCopyToClipboard(currentDirectory);
+				_fileConcatenationController.ConcatenateFilesAndCopyToClipboard(_currentDirectory);
 				_ui.DisplayMessage("Press any key to continue.");
 				Console.ReadKey();
 			}
 			else if (command == "2")
 			{
 				_configurationController.ConfigureSettings();
+				_currentDirectory = _configurationService.GetBaseDirectoryPath(); // Update in case the base path was changed
 			}
 			else if (command == "3")
 			{
