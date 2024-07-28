@@ -33,8 +33,8 @@ bld/
 [Ll]og/
 [Ll]ogs/
 
-# Ignore the config.json file in the bin directory
-bin/**/config.json
+# Ignore the settings.json file in the bin directory
+bin/**/settings.json
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/

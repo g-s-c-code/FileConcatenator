@@ -2,17 +2,17 @@
 
 public class ConsoleUI : IUserInterface
 {
-    public void DisplayMessage(string message)
-    {
-        Console.WriteLine(message);
-    }
+	public void DisplayMessage(string message)
+	{
+		Console.WriteLine(message);
+	}
 
-    public string GetInput()
-    {
-        return Console.ReadLine() ?? "";
-    }
+	public string GetInput()
+	{
+		return Console.ReadLine() ?? "";
+	}
 
-    public void Clear()
+	public void Clear()
 	{
 		Console.Clear();
 	}

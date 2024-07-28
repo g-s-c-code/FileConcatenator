@@ -5,125 +5,98 @@ namespace FileConcatenator;
 
 public class FileConcatenationService
 {
-	private readonly Configuration config;
+	private readonly Configuration _configuration;
 
-	public FileConcatenationService(Configuration config)
+	public FileConcatenationService(Configuration configuration)
 	{
-		this.config = config;
+		_configuration = configuration;
 	}
 
-	public string GetTargetedFileTypes()
+	public IEnumerable<string> GetDirectories(string path)
 	{
-		return string.Join(", ", config.FileTypes);
-	}
-
-	public void DisplayDirectories(string path)
-	{
+		var directories = new List<string>();
 		try
 		{
 			foreach (var dir in Directory.GetDirectories(path))
 			{
-				try
+				if (!_configuration.ShowHiddenFiles && (new DirectoryInfo(dir).Attributes & FileAttributes.Hidden) != 0)
 				{
-					if (!config.ShowHiddenFiles && (new DirectoryInfo(dir).Attributes & FileAttributes.Hidden) != 0)
-					{
-						continue;
-					}
-
-					Console.WriteLine($"[D] {Path.GetFileName(dir)}");
+					continue;
 				}
-				catch (UnauthorizedAccessException)
-				{
-					Console.WriteLine($"[D] {Path.GetFileName(dir)} (Access Denied)");
-				}
+				directories.Add($"[D] {Path.GetFileName(dir)}");
 			}
 		}
 		catch (UnauthorizedAccessException)
 		{
-			Console.WriteLine($"Error: Access to the path '{path}' is denied.");
+			directories.Add($"Error: Access to the path '{path}' is denied.");
 		}
 		catch (Exception ex)
 		{
-			Console.WriteLine($"Error: {ex.Message}");
+			directories.Add($"Error: {ex.Message}");
 		}
-		Console.WriteLine();
+		return directories;
 	}
 
-	public void DisplayFiles(string path)
+	public IEnumerable<string> GetFiles(string path)
 	{
+		var files = new List<string>();
 		try
 		{
 			foreach (var file in Directory.GetFiles(path))
 			{
-				try
+				if (!_configuration.ShowHiddenFiles && (new FileInfo(file).Attributes & FileAttributes.Hidden) != 0)
 				{
-					if (!config.ShowHiddenFiles && (new FileInfo(file).Attributes & FileAttributes.Hidden) != 0)
-					{
-						continue;
-					}
-
-					Console.WriteLine($"[F] {Path.GetFileName(file)}");
+					continue;
 				}
-				catch (UnauthorizedAccessException)
-				{
-					Console.WriteLine($"[F] {Path.GetFileName(file)} (Access Denied)");
-				}
+				files.Add($"[F] {Path.GetFileName(file)}");
 			}
 		}
 		catch (UnauthorizedAccessException)
 		{
-			Console.WriteLine($"Error: Access to the path '{path}' is denied.");
+			files.Add($"Error: Access to the path '{path}' is denied.");
 		}
 		catch (Exception ex)
 		{
-			Console.WriteLine($"Error: {ex.Message}");
+			files.Add($"Error: {ex.Message}");
 		}
-		Console.WriteLine();
+		return files;
 	}
 
-	public void ConcatenateFilesAndCopyToClipboard(string path)
+	public (bool Success, string Message) ConcatenateFiles(string path)
 	{
 		var sb = new StringBuilder();
 		bool accessDeniedFlag = false;
 
-		foreach (var fileType in config.FileTypes)
+		foreach (var fileType in _configuration.FileTypes.Split(','))
 		{
 			try
 			{
-				var files = Directory.GetFiles(path, fileType, SearchOption.AllDirectories);
+				var files = Directory.GetFiles(path, fileType.Trim(), SearchOption.AllDirectories);
 				foreach (var file in files)
 				{
 					try
 					{
-						if (sb.Length > config.ClipboardCharacterLimit)
+						if (sb.Length > _configuration.ClipboardCharacterLimit)
 						{
-							Console.WriteLine("Warning: Clipboard character limit reached. Not all files were concatenated.");
-							goto ClipboardCopy;
+							return (false, "Warning: Clipboard character limit reached. Not all files were concatenated.");
 						}
-						sb.AppendLine($"//{Path.GetFileName(file)}");
+						sb.AppendLine($"// {Path.GetFileName(file)}");
 						sb.AppendLine(File.ReadAllText(file));
 						sb.AppendLine();
 					}
 					catch (UnauthorizedAccessException)
 					{
-						Console.WriteLine($"Error: Access to the file '{file}' is denied.");
 						accessDeniedFlag = true;
 					}
 				}
 			}
 			catch (UnauthorizedAccessException)
 			{
-				Console.WriteLine($"Error: Access to some paths in '{path}' is denied.");
 				accessDeniedFlag = true;
 			}
 		}
 
-	ClipboardCopy:
 		ClipboardService.SetText(sb.ToString());
-
-		if (accessDeniedFlag)
-		{
-			Console.WriteLine("Note: Some files or directories could not be accessed and were skipped.");
-		}
+		return accessDeniedFlag ? (true, "Note: Some files or directories could not be accessed and were skipped.") : (true, string.Empty);
 	}
 }
