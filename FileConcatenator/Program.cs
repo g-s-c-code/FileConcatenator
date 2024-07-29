@@ -19,8 +19,6 @@ namespace FileConcatenator
 			services.AddSingleton<IUserInterface, SpectreUI>();
 			services.AddSingleton<ConfigurationService>();
 			services.AddSingleton<FileConcatenationService>();
-			services.AddSingleton<ConfigurationController>();
-			services.AddSingleton<FileConcatenationController>();
 			services.AddSingleton<ProgramController>();
 		}
 	}
