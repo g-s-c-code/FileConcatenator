@@ -22,6 +22,10 @@ public class Controller
 			string targetedFileTypes = _configService.GetTargetedFileTypes();
 
 			_ui.Clear();
+
+			_ui.Grid();
+
+
 			_ui.DisplayMessage($"Current Directory: {_currentDirectory}");
 			_ui.DisplayMessage($"Current Targeted File Types: {targetedFileTypes}");
 			_ui.DisplayMessage("");
@@ -74,6 +78,7 @@ public class Controller
 			{
 				_ui.DisplayMessage("Error: Invalid command.");
 			}
+
 		}
 	}
 
