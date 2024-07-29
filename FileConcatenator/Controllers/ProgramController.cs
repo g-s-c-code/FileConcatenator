@@ -28,10 +28,11 @@ public class ProgramController
 			_ui.Clear();
 			_ui.DisplayMessage($"Current Directory: {_currentDirectory}");
 			_ui.DisplayMessage($"Current Targeted File Types: {targetedFileTypes}");
-			_ui.DisplayMessage("Directories:");
+			_ui.DisplayMessage("");
 			_fileConcatenationController.DisplayDirectories(_currentDirectory);
-			_ui.DisplayMessage("Files:");
+			_ui.DisplayMessage("");
 			_fileConcatenationController.DisplayFiles(_currentDirectory);
+			_ui.DisplayMessage("");
 			_ui.DisplayMessage("Commands:");
 			_ui.DisplayMessage("[cd <directory>] - Change Directory");
 			_ui.DisplayMessage("[1] - Concatenate files and copy to clipboard");
