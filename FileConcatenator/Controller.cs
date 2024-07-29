@@ -1,13 +1,13 @@
 ﻿namespace FileConcatenator;
 
-public class ProgramController
+public class Controller
 {
-	private readonly IUserInterface _ui;
-	private readonly ConfigurationService _configService;
+	private readonly SpectreUI _ui;
+	private readonly ConfigurationManager _configService;
 	private readonly FileConcatenationService _fileConcatenationService;
 	private string _currentDirectory;
 
-	public ProgramController(IUserInterface ui, ConfigurationService configService, FileConcatenationService fileConcatenationService)
+	public Controller(SpectreUI ui, ConfigurationManager configService, FileConcatenationService fileConcatenationService)
 	{
 		_ui = ui;
 		_configService = configService;

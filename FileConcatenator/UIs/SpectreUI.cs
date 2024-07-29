@@ -1,9 +1,8 @@
-﻿// SpectreUI.cs
-using Spectre.Console;
+﻿using Spectre.Console;
 
 namespace FileConcatenator;
 
-public class SpectreUI : IUserInterface
+public class SpectreUI
 {
 	public void DisplayMessage(string message)
 	{
@@ -22,50 +21,64 @@ public class SpectreUI : IUserInterface
 
 	public void DisplayDirectories(IEnumerable<string> directories)
 	{
-		var root = new Tree("[bold white]Directories[/]");
+		var headerPanel = new Panel("[bold white]Directories[/]")
+			.Border(BoxBorder.Rounded);
 
-		foreach (var dir in directories)
-		{
-			root.AddNode(Markup.Escape(dir));
-		}
-
-		AnsiConsole.Write(root);
-	}
-
-	public void DisplayFiles(IEnumerable<string> files)
-	{
-		var root = new Tree("[bold white]Files[/]");
-
-		foreach (var file in files)
-		{
-			root.AddNode(Markup.Escape(file));
-		}
-
-		AnsiConsole.Write(root);
-	}
-
-	public void DisplayDirectoriesAndFiles(IEnumerable<string> directories, IEnumerable<string> files)
-	{
-		var directoryTree = new Tree("[bold white]Directories[/]");
+		var directoryTree = new Tree(string.Empty);
 		foreach (var dir in directories)
 		{
 			directoryTree.AddNode(Markup.Escape(dir));
 		}
 
-		var fileTree = new Tree("[bold white]Files[/]");
+		AnsiConsole.Write(headerPanel);
+		AnsiConsole.Write(directoryTree);
+	}
+
+	public void DisplayFiles(IEnumerable<string> files)
+	{
+		var headerPanel = new Panel("[bold white]Files[/]")
+			.Border(BoxBorder.Rounded)
+			;
+
+		var fileTree = new Tree(string.Empty);
 		foreach (var file in files)
 		{
 			fileTree.AddNode(Markup.Escape(file));
 		}
 
-		AnsiConsole.Write(
-			new Columns(
-				new Panel(directoryTree).Expand(),
-				new Panel(fileTree).Expand()
-			)
-			.Expand()
-			.PadRight(2)
-			.PadLeft(2)
-		);
+		AnsiConsole.Write(headerPanel);
+		AnsiConsole.Write(fileTree);
+	}
+
+	public void DisplayDirectoriesAndFiles(IEnumerable<string> directories, IEnumerable<string> files)
+	{
+		var directoryHeaderPanel = new Panel("[bold white]Directories[/]")
+			.Border(BoxBorder.Rounded)
+			;
+		var fileHeaderPanel = new Panel("[bold white]Files[/]")
+			.Border(BoxBorder.Rounded)
+			;
+
+		var directoryTree = new Tree(string.Empty);
+		foreach (var dir in directories)
+		{
+			directoryTree.AddNode(Markup.Escape(dir));
+		}
+
+		var fileTree = new Tree(string.Empty);
+		foreach (var file in files)
+		{
+			fileTree.AddNode(Markup.Escape(file));
+		}
+
+		AnsiConsole.Write(new Columns(
+			directoryHeaderPanel,
+			fileHeaderPanel
+		));
+
+		AnsiConsole.Write(new Columns(
+			directoryTree,
+			fileTree
+		).PadRight(2).PadLeft(2));
 	}
 }
