@@ -23,9 +23,6 @@ public class Controller
 
 			_ui.Clear();
 
-			_ui.Grid();
-
-
 			_ui.DisplayMessage($"Current Directory: {_currentDirectory}");
 			_ui.DisplayMessage($"Current Targeted File Types: {targetedFileTypes}");
 			_ui.DisplayMessage("");
