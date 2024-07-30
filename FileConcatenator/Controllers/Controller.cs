@@ -25,13 +25,13 @@ public class Controller
 
 			_ui.Clear();
 
-			var currentDirectoryPanel = _ui.DisplayMarkup($"Current Directory: {_currentDirectory}");
-			var targetedFilesPanel = _ui.DisplayMarkup($"TARGETED FILES: {targetedFileTypes.ToLower()}");
+			var currentDirectoryPanel = _ui.DisplayMarkup(_currentDirectory);
+			var targetedFilesPanel = _ui.DisplayMarkup(targetedFileTypes);
 			var commandsPanelContent = GetCommandList();
 			var directoriesTree = _ui.DisplayTree("Directories", _fileConcatenationService.GetDirectories(_currentDirectory));
 			var filesTree = _ui.DisplayTree("Files", _fileConcatenationService.GetFiles(_currentDirectory));
 
-			_ui.LayoutTable(currentDirectoryPanel, targetedFilesPanel, _ui.DisplayMarkup(commandsPanelContent), directoriesTree, filesTree);
+			_ui.MainLayout(targetedFilesPanel, currentDirectoryPanel, _ui.DisplayMarkup(commandsPanelContent), directoriesTree, filesTree);
 
 			var userCommands = AnsiConsole.Ask<string>("[bold]Enter command:[/]");
 

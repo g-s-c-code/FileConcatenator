@@ -37,23 +37,33 @@ public class SpectreUI
 		return tree;
 	}
 
-	public void LayoutTable(IRenderable firstColumnFirstRow, IRenderable secondColumnFirstRow, IRenderable firstColumnSecondRow, IRenderable directories, IRenderable files)
+	public void MainLayout(IRenderable targetedFiles, IRenderable currentDirectory, IRenderable commands, IRenderable directoriesTree, IRenderable filesTree)
 	{
-		var table = new Table();
-		table.AddColumn(new TableColumn(firstColumnFirstRow));
-		table.AddColumn(new TableColumn(secondColumnFirstRow));
+		var mainLayout = new Table();
 
-		var dirTable = new Table();
-		dirTable.AddColumn(new TableColumn(directories));
-		dirTable.AddColumn(new TableColumn(files));
+		var targetedFilesTable = new Table();
+		targetedFilesTable.AddColumn(new TableColumn("Targeted Files:".ToUpper()));
+		targetedFilesTable.AddColumn(new TableColumn(targetedFiles));
+		targetedFilesTable.Border = TableBorder.None;
 
-		table.AddRow(firstColumnSecondRow, dirTable);
+		var currentDirectoryTable = new Table();
+		currentDirectoryTable.AddColumn(new TableColumn("Current Directory:".ToUpper()));
+		currentDirectoryTable.AddColumn(new TableColumn(currentDirectory));
+		currentDirectoryTable.Border = TableBorder.None;
+
+		mainLayout.AddColumn(new TableColumn(targetedFilesTable));
+		mainLayout.AddColumn(new TableColumn(currentDirectoryTable));
+
+		var treeTable = new Table();
+		treeTable.AddColumn(new TableColumn(directoriesTree));
+		treeTable.AddColumn(new TableColumn(filesTree));
+
+		mainLayout.AddRow(commands, treeTable);
 
 		//Style
-		table.Border = TableBorder.Double;
-		dirTable.Border = TableBorder.None;
-		table.Columns[0].Alignment = Justify.Left;
+		mainLayout.Border = TableBorder.Double;
+		treeTable.Border = TableBorder.None;
 
-		AnsiConsole.Write(table);
+		AnsiConsole.Write(mainLayout);
 	}
 }
