@@ -1,154 +1,70 @@
 ﻿using Spectre.Console;
 using Spectre.Console.Rendering;
+using System.Collections.Generic;
 
-namespace FileConcatenator;
-
-public class SpectreUI
+namespace FileConcatenator
 {
-	private readonly ConfigurationManager _configurationManager;
-	private readonly FileConcatenationService _fileConcatenationService;
-
-	public SpectreUI(ConfigurationManager configurationManager, FileConcatenationService fileConcatenationService)
+	public class SpectreUI
 	{
-		_configurationManager = configurationManager;
-		_fileConcatenationService = fileConcatenationService;
-	}
-
-	public void Clear()
-	{
-		AnsiConsole.Clear();
-	}
-	public IRenderable DisplayCurrentDirectory()
-	{
-		return new Panel(new Markup(_configurationManager.GetBaseDirectoryPath()))
+		public void Clear()
 		{
-			Header = new PanelHeader("Current Directory"),
-			Border = BoxBorder.Rounded,
-			Expand = true
-		};
-	}
-
-	public IRenderable DisplayTargetedFiles()
-	{
-		return new Panel(new Markup(_configurationManager.GetTargetedFileTypes()))
-		{
-			Header = new PanelHeader("Targeted File Types"),
-			Border = BoxBorder.Rounded,
-			Expand = true
-		};
-	}
-
-	public void Layout()
-	{
-		var layout = new Layout()
-			.SplitColumns(
-				new Layout("Left")
-					.SplitRows(
-						new Layout("Information")
-							.SplitRows(
-								new Layout("CurrentDirectory"),
-								new Layout("TargetedFiles")),
-						new Layout("Commands")),
-				new Layout("Right").SplitColumns(
-					new Layout("Directories"),
-					new Layout("Files")));
-
-		layout["CurrentDirectory"].Update(DisplayCurrentDirectory());
-		layout["TargetedFiles"].Update(DisplayTargetedFiles());
-		layout["Directories"].Update(RenderDirectories());
-		layout["Files"].Update(RenderFiles());
-		layout["Left"].Ratio(1);
-		layout["Right"].Ratio(2);
-
-		AnsiConsole.Write(layout);
-	}
-
-	private IRenderable RenderDirectories()
-	{
-		var directories = GetDirectories();
-		var panel = new Panel(GetDirectoryTree(directories))
-		{
-			Header = new PanelHeader(""),
-			Expand = true
-		};
-		return panel;
-	}
-
-	private IRenderable RenderFiles()
-	{
-		var files = GetFiles();
-		var panel = new Panel(GetFileTree(files))
-		{
-			Header = new PanelHeader(""),
-			Expand = true
-		};
-		return panel;
-	}
-
-	private Tree GetDirectoryTree(IEnumerable<string> directories)
-	{
-		var tree = new Tree("[bold white]Directories[/]");
-		foreach (var dir in directories)
-		{
-			tree.AddNode(Markup.Escape(dir));
+			AnsiConsole.Clear();
 		}
 
-		return tree;
-	}
-
-	private Tree GetFileTree(IEnumerable<string> files)
-	{
-		var tree = new Tree("[bold white]Files[/]");
-		foreach (var file in files)
+		public IRenderable DisplayPanel(string header, string content)
 		{
-			tree.AddNode(Markup.Escape(file));
+			return new Panel(new Markup(content))
+			{
+				Header = new PanelHeader($"[bold] {header} [/]").Centered(),
+				Border = BoxBorder.Rounded,
+				Expand = true
+			};
 		}
 
-		return tree;
-	}
-
-	private IEnumerable<string> GetDirectories()
-	{
-		var path = _configurationManager.GetBaseDirectoryPath();
-		return _fileConcatenationService.GetDirectories(path);
-	}
-
-	public IEnumerable<string> GetFiles()
-	{
-		var path = _configurationManager.GetBaseDirectoryPath();
-		return _fileConcatenationService.GetFiles(path);
-	}
-
-	public void DisplayDirectories(IEnumerable<string> directories)
-	{
-		var headerPanel = new Panel("[bold white]Directories[/]");
-		var directoryTree = new Tree(string.Empty);
-		foreach (var dir in directories)
+		public IRenderable DisplayTree(string header, IEnumerable<string> items)
 		{
-			directoryTree.AddNode(Markup.Escape(dir));
+			var tree = new Tree($"[bold white]{header}[/]");
+			foreach (var item in items)
+			{
+				tree.AddNode(Markup.Escape(item));
+			}
+			return tree;
 		}
-		AnsiConsole.Write(headerPanel);
-		AnsiConsole.Write(directoryTree);
-	}
-	public void DisplayFiles(IEnumerable<string> files)
-	{
-		var headerPanel = new Panel("[bold white]Files[/]");
-		var fileTree = new Tree(string.Empty);
-		foreach (var file in files)
+
+		public void Layout(IRenderable currentDirectory, IRenderable targetedFiles, IRenderable commands, IRenderable directories, IRenderable files)
 		{
-			fileTree.AddNode(Markup.Escape(file));
+			var layout = new Layout()
+				.SplitColumns(
+					new Layout("Left")
+						.SplitRows(
+							new Layout("Information")
+								.SplitRows(
+									new Layout("CurrentDirectory"),
+									new Layout("TargetedFiles")),
+							new Layout("Commands")),
+					new Layout("Right").SplitColumns(
+						new Layout("Directories"),
+						new Layout("Files")));
+
+			layout["CurrentDirectory"].Update(currentDirectory);
+			layout["TargetedFiles"].Update(targetedFiles);
+			layout["Commands"].Update(commands);
+			layout["Directories"].Update(directories);
+			layout["Files"].Update(files);
+			layout["Left"].Ratio(2);
+			layout["Right"].Ratio(3);
+
+			AnsiConsole.Write(layout);
 		}
-		AnsiConsole.Write(headerPanel);
-		AnsiConsole.Write(fileTree);
-	}
 
-	public string GetInput()
-	{
-		return AnsiConsole.Ask<string>("Enter command: ");
-	}
+		public void DisplayMessage(string message)
+		{
+			AnsiConsole.MarkupLine(message);
+		}
 
-	public void Header(string message)
-	{
-		AnsiConsole.MarkupLine(message);
+		public string GetInput(string prompt)
+		{
+			return AnsiConsole.Ask<string>(prompt);
+		}
 	}
 }
