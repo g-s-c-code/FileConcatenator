@@ -30,25 +30,24 @@ namespace FileConcatenator
 
 				var currentDirectoryPanel = _ui.DisplayPanel("Current Directory", _currentDirectory);
 				var targetedFilesPanel = _ui.DisplayPanel("Targeted File Types", targetedFileTypes);
-				var commandsPanel = _ui.DisplayPanel("Commands", GetCommandList());
-
+				var commandsPanelContent = GetCommandList();
 				var directoriesTree = _ui.DisplayTree("Directories", _fileConcatenationService.GetDirectories(_currentDirectory));
 				var filesTree = _ui.DisplayTree("Files", _fileConcatenationService.GetFiles(_currentDirectory));
+				
+				_ui.LayoutTable(currentDirectoryPanel, targetedFilesPanel, _ui.DisplayPanel("Commands", commandsPanelContent), directoriesTree, filesTree);
 
-				_ui.Layout(currentDirectoryPanel, targetedFilesPanel, commandsPanel, directoriesTree, filesTree);
+				var commandInput = AnsiConsole.Ask<string>("[bold]Enter command:[/]");
 
-				string command = _ui.GetInput("Enter command: ");
-
-				ProcessCommand(command);
+				ProcessCommand(commandInput);
 			}
 		}
 
 		private string GetCommandList()
 		{
-			var commands = "[cd <directory>] - Change Directory\n" +
-						   "[1] - Concatenate files and copy to clipboard\n" +
-						   "[2] - Configure Settings\n" +
-						   "[3] - Exit application";
+			var commands = "cd <directory> - Change Directory\n" +
+						   "1 - Concatenate files and copy to clipboard\n" +
+						   "2 - Configure Settings\n" +
+						   "3 - Exit application";
 
 			return Markup.Escape(commands);
 		}
@@ -114,11 +113,11 @@ namespace FileConcatenator
 			{
 				_ui.Clear();
 				_ui.DisplayMessage("Configuration Settings:");
-				_ui.DisplayMessage($"[1] Show hidden files - Current Settings: {_configService.GetShowHiddenFiles()}");
-				_ui.DisplayMessage($"[2] Set Base Path - Current Settings: {_configService.GetBaseDirectoryPath()}");
-				_ui.DisplayMessage($"[3] File types to concatenate - Current Settings: {_configService.GetTargetedFileTypes()}");
-				_ui.DisplayMessage($"[4] Clipboard character limit - Current Settings: {_configService.GetClipboardCharacterLimit()}");
-				_ui.DisplayMessage("[5] Back to main menu");
+				_ui.DisplayMessage($"1 - Show hidden files - Current Settings: {_configService.GetShowHiddenFiles()}");
+				_ui.DisplayMessage($"2 - Set Base Path - Current Settings: {_configService.GetBaseDirectoryPath()}");
+				_ui.DisplayMessage($"3 - File types to concatenate - Current Settings: {_configService.GetTargetedFileTypes()}");
+				_ui.DisplayMessage($"4 - Clipboard character limit - Current Settings: {_configService.GetClipboardCharacterLimit()}");
+				_ui.DisplayMessage($"5 - Back to main menu");
 				_ui.DisplayMessage("");
 
 				string choice = _ui.GetInput("Enter the number of the setting you want to change: ");
