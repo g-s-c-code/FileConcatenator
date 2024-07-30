@@ -18,34 +18,48 @@ public class SpectreUI
 	{
 		AnsiConsole.Clear();
 	}
-
-	public void DisplayCurrentDirectory()
+	public IRenderable DisplayCurrentDirectory()
 	{
-		var path = _configurationManager.GetBaseDirectoryPath();
-		var rule = new Rule($"[bold white]Current directory: {path}[/]");
-		rule.Justification = Justify.Left;
-		AnsiConsole.Write(rule);
+		return new Panel(new Markup(_configurationManager.GetBaseDirectoryPath()))
+		{
+			Header = new PanelHeader("Current Directory"),
+			Border = BoxBorder.Rounded,
+			Expand = true
+		};
+	}
+
+	public IRenderable DisplayTargetedFiles()
+	{
+		return new Panel(new Markup(_configurationManager.GetTargetedFileTypes()))
+		{
+			Header = new PanelHeader("Targeted File Types"),
+			Border = BoxBorder.Rounded,
+			Expand = true
+		};
 	}
 
 	public void Layout()
 	{
 		var layout = new Layout()
 			.SplitColumns(
-			new Layout("Left")
+				new Layout("Left")
 					.SplitRows(
-						new Layout("Information"),
+						new Layout("Information")
+							.SplitRows(
+								new Layout("CurrentDirectory"),
+								new Layout("TargetedFiles")),
 						new Layout("Commands")),
-		new Layout("Right").SplitColumns(
+				new Layout("Right").SplitColumns(
 					new Layout("Directories"),
 					new Layout("Files")));
 
-
+		layout["CurrentDirectory"].Update(DisplayCurrentDirectory());
+		layout["TargetedFiles"].Update(DisplayTargetedFiles());
 		layout["Directories"].Update(RenderDirectories());
 		layout["Files"].Update(RenderFiles());
 		layout["Left"].Ratio(1);
 		layout["Right"].Ratio(2);
 
-		DisplayCurrentDirectory();
 		AnsiConsole.Write(layout);
 	}
 
