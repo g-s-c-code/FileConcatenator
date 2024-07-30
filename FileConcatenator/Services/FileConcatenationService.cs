@@ -23,7 +23,7 @@ public class FileConcatenationService
 				{
 					continue;
 				}
-				directories.Add($"[D] {Path.GetFileName(dir)}");
+				directories.Add($"{Path.GetFileName(dir)}");
 			}
 		}
 		catch (UnauthorizedAccessException)
@@ -48,7 +48,7 @@ public class FileConcatenationService
 				{
 					continue;
 				}
-				files.Add($"[F] {Path.GetFileName(file)}");
+				files.Add($"{Path.GetFileName(file)}");
 			}
 		}
 		catch (UnauthorizedAccessException)
@@ -80,7 +80,7 @@ public class FileConcatenationService
 						{
 							return (false, "Warning: Clipboard character limit reached. Not all files were concatenated.");
 						}
-						sb.AppendLine($"// {Path.GetFileName(file)}");
+						sb.AppendLine($"//{Path.GetFileName(file)}");
 						sb.AppendLine(File.ReadAllText(file));
 						sb.AppendLine();
 					}

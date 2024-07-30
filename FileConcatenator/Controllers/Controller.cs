@@ -8,6 +8,7 @@ public class Controller
 	private readonly ConfigurationManager _configService;
 	private readonly FileConcatenationService _fileConcatenationService;
 	private string _currentDirectory;
+	private bool _isInSettingsMenu;
 
 	public Controller(SpectreUI ui, ConfigurationManager configService, FileConcatenationService fileConcatenationService)
 	{
@@ -15,6 +16,7 @@ public class Controller
 		_configService = configService;
 		_fileConcatenationService = fileConcatenationService;
 		_currentDirectory = _configService.GetBaseDirectoryPath();
+		_isInSettingsMenu = false;
 	}
 
 	public void Run()
@@ -25,13 +27,13 @@ public class Controller
 
 			_ui.Clear();
 
-			var currentDirectoryPanel = _ui.DisplayMarkup(_currentDirectory);
-			var targetedFilesPanel = _ui.DisplayMarkup(targetedFileTypes);
-			var commandsPanelContent = GetCommandList();
+			var currentDirectory = _ui.DisplayMarkup(_currentDirectory);
+			var targetedFiles = _ui.DisplayMarkup(targetedFileTypes);
+			var commands = GetCommandList();
 			var directoriesTree = _ui.DisplayTree("Directories", _fileConcatenationService.GetDirectories(_currentDirectory));
 			var filesTree = _ui.DisplayTree("Files", _fileConcatenationService.GetFiles(_currentDirectory));
 
-			_ui.MainLayout(targetedFilesPanel, currentDirectoryPanel, _ui.DisplayMarkup(commandsPanelContent), directoriesTree, filesTree);
+			_ui.MainLayout(targetedFiles, currentDirectory, _ui.DisplayMarkup(commands), directoriesTree, filesTree);
 
 			var userCommands = AnsiConsole.Ask<string>("[bold]Enter command:[/]");
 
@@ -41,16 +43,40 @@ public class Controller
 
 	private string GetCommandList()
 	{
-		var commands = "Commands:\n" +
-			"cd <directory> - Change Directory\n" +
-					   "1 - Concatenate files and copy to clipboard\n" +
-					   "2 - Configure Settings\n" +
-					   "3 - Exit application";
-
-		return Markup.Escape(commands);
+		if (_isInSettingsMenu)
+		{
+			return Markup.Escape(
+				"1 - Show hidden files\n" +
+				"2 - Set Base Path\n" +
+				"3 - File types to concatenate\n" +
+				"4 - Clipboard character limit\n" +
+				"5 - Back to main menu"
+			);
+		}
+		else
+		{
+			return Markup.Escape(
+				"cd <directory> - Change Directory\n" +
+				"1 - Concatenate files and copy to clipboard\n" +
+				"2 - Configure Settings\n" +
+				"3 - Exit application"
+			);
+		}
 	}
 
 	private void ProcessCommand(string command)
+	{
+		if (_isInSettingsMenu)
+		{
+			ProcessSettingsCommand(command);
+		}
+		else
+		{
+			ProcessMainCommand(command);
+		}
+	}
+
+	private void ProcessMainCommand(string command)
 	{
 		if (command.StartsWith("cd"))
 		{
@@ -62,7 +88,7 @@ public class Controller
 		}
 		else if (command == "2")
 		{
-			ConfigureSettings();
+			_isInSettingsMenu = true;
 		}
 		else if (command == "3")
 		{
@@ -71,6 +97,31 @@ public class Controller
 		else
 		{
 			_ui.DisplayMessage("Error: Invalid command.");
+		}
+	}
+
+	private void ProcessSettingsCommand(string command)
+	{
+		switch (command)
+		{
+			case "1":
+				ConfigureShowHiddenFiles();
+				break;
+			case "2":
+				ConfigureBasePath();
+				break;
+			case "3":
+				ConfigureFileTypes();
+				break;
+			case "4":
+				ConfigureClipboardLimit();
+				break;
+			case "5":
+				_isInSettingsMenu = false;
+				break;
+			default:
+				_ui.DisplayMessage("Invalid choice.");
+				break;
 		}
 	}
 
@@ -102,45 +153,6 @@ public class Controller
 		else
 		{
 			_ui.DisplayMessage("Error occurred during concatenation.");
-		}
-	}
-
-	private void ConfigureSettings()
-	{
-		while (true)
-		{
-			_ui.Clear();
-			_ui.DisplayMessage("Configuration Settings:");
-			_ui.DisplayMessage($"1 - Show hidden files - Current Settings: {_configService.GetShowHiddenFiles()}");
-			_ui.DisplayMessage($"2 - Set Base Path - Current Settings: {_configService.GetBaseDirectoryPath()}");
-			_ui.DisplayMessage($"3 - File types to concatenate - Current Settings: {_configService.GetTargetedFileTypes()}");
-			_ui.DisplayMessage($"4 - Clipboard character limit - Current Settings: {_configService.GetClipboardCharacterLimit()}");
-			_ui.DisplayMessage($"5 - Back to main menu");
-			_ui.DisplayMessage("");
-
-			string choice = _ui.GetInput("Enter the number of the setting you want to change: ");
-			_ui.DisplayMessage("");
-
-			switch (choice)
-			{
-				case "1":
-					ConfigureShowHiddenFiles();
-					break;
-				case "2":
-					ConfigureBasePath();
-					break;
-				case "3":
-					ConfigureFileTypes();
-					break;
-				case "4":
-					ConfigureClipboardLimit();
-					break;
-				case "5":
-					return;
-				default:
-					_ui.DisplayMessage("Invalid choice.");
-					break;
-			}
 		}
 	}
 
