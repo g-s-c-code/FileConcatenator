@@ -30,7 +30,7 @@ public class Controller
 			var currentDirectory = _ui.DisplayMarkup(_currentDirectory);
 			var targetedFiles = _ui.DisplayMarkup(targetedFileTypes);
 			var commands = GetCommandList();
-			var directoriesTree = _ui.DisplayTree("Directories", _fileConcatenationService.GetDirectories(_currentDirectory));
+			var directoriesTree = _ui.DisplayTree("Folders", _fileConcatenationService.GetDirectories(_currentDirectory));
 			var filesTree = _ui.DisplayTree("Files", _fileConcatenationService.GetFiles(_currentDirectory));
 
 			_ui.MainLayout(targetedFiles, currentDirectory, _ui.DisplayMarkup(commands), directoriesTree, filesTree);

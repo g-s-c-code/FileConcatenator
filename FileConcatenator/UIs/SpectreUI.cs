@@ -23,12 +23,16 @@ public class SpectreUI
 
 	public IRenderable DisplayMarkup(string content)
 	{
-		return new Markup($"[bold]{Markup.Escape(content)}[/]");
+		return new Markup($"[bold white]{Markup.Escape(content)}[/]");
 	}
 
 	public IRenderable DisplayTree(string header, IEnumerable<string> items)
 	{
-		var tree = new Tree($"[bold]{Markup.Escape(header.ToUpper())}: [/]");
+		var tree = new Tree($"[bold grey66]{Markup.Escape(header.ToUpper())}:[/]")
+		{
+			Style = new Style(foreground: Color.RosyBrown)
+		};
+
 		foreach (var item in items)
 		{
 			tree.AddNode($"[bold white]{Markup.Escape(item)}[/]");
@@ -40,20 +44,21 @@ public class SpectreUI
 	public void MainLayout(IRenderable targetedFiles, IRenderable currentDirectory, IRenderable commands, IRenderable directoriesTree, IRenderable filesTree)
 	{
 		var targetedFilesTable = new Table();
-		targetedFilesTable.AddColumn(new TableColumn("[bold]Targeted File Types: [/]".ToUpper()));
+		targetedFilesTable.AddColumn(new TableColumn("[bold grey66]Targeted File Types:[/]".ToUpper()));
 		targetedFilesTable.AddColumn(new TableColumn(targetedFiles));
 		targetedFilesTable.Border = TableBorder.None;
-		targetedFilesTable.Width(50);
 
 		var currentDirectoryTable = new Table();
-		currentDirectoryTable.AddColumn(new TableColumn("[bold]Current Directory: [/]".ToUpper()));
+		currentDirectoryTable.AddColumn(new TableColumn("[bold grey66]Directory:[/]".ToUpper()));
 		currentDirectoryTable.AddColumn(new TableColumn(currentDirectory));
 		currentDirectoryTable.Border = TableBorder.None;
 
 		var commandsTable = new Table();
-		commandsTable.AddColumn(new TableColumn("[bold]Commands: [/]".ToUpper()));
+		commandsTable.AddColumn(new TableColumn("[bold grey66]Commands:[/]".ToUpper()));
 		commandsTable.AddRow(commands);
 		commandsTable.Border = TableBorder.None;
+		commandsTable.Width(50);
+
 
 		var directoryTreeTable = new Table();
 		directoryTreeTable.AddColumn(new TableColumn(directoriesTree));
@@ -65,7 +70,9 @@ public class SpectreUI
 		mainLayout.AddColumn(new TableColumn(targetedFilesTable));
 		mainLayout.AddColumn(new TableColumn(currentDirectoryTable));
 		mainLayout.AddRow(commandsTable, directoryTreeTable);
-		mainLayout.Border = TableBorder.Double;
+		mainLayout.Border = TableBorder.DoubleEdge;
+		mainLayout.BorderColor(Color.SteelBlue);
+
 
 		AnsiConsole.Write(mainLayout);
 	}
