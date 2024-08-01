@@ -10,15 +10,12 @@ public class Controller
 	private string _currentDirectory;
 	private bool _isInSettingsMenu;
 
-	private const string no = "No";
-	private const string yes = "Yes";
-
 	public Controller(SpectreUI ui, ConfigurationManager configurationService, FileConcatenationService fileConcatenationService)
 	{
 		_ui = ui;
 		_configurationService = configurationService;
-		_currentDirectory = _configurationService.GetBaseDirectoryPath();
 		_fileConcatenationService = fileConcatenationService;
+		_currentDirectory = _configurationService.GetBaseDirectoryPath();
 		_isInSettingsMenu = false;
 	}
 
@@ -33,7 +30,7 @@ public class Controller
 
 			_ui.MainLayout(_configurationService.GetTargetedFileTypes(), _currentDirectory, DisplayAvailableCommands(), directoriesTree, filesTree);
 
-			var userCommands = AnsiConsole.Ask<string>("Enter command:");
+			var userCommands = AnsiConsole.Ask<string>(_ui.StyledText("Enter command:", Color.White));
 
 			ProcessCommand(userCommands);
 		}
@@ -41,31 +38,37 @@ public class Controller
 
 	private string DisplayAvailableCommands()
 	{
-		if (_isInSettingsMenu)
-		{
-			return Markup.Escape(
-				"[1] Show Hidden Files\n" +
-				"[2] Set Base Path\n" +
-				"[3] Set File Types\n" +
-				"[4] Set Clipboard Limit\n" +
-				"[5] Back\n" +
-				"\n" +
-				"Current Settings:\n" +
-				$"Show Hidden Files: {(_configurationService.GetShowHiddenFiles() == false ? no : yes)}\n" +
-				$"Base Path: {_configurationService.GetBaseDirectoryPath()}\n" +
-				$"Targeted File Types: {_configurationService.GetTargetedFileTypes()}\n" +
-				$"Clipboard Limit: {_configurationService.GetClipboardCharacterLimit()}"
-			);
-		}
-		else
-		{
-			return Markup.Escape(
-				"[cd <dir>] Change Directory\n" +
-				"[1] Concatenate Files and Copy to Clipboard\n" +
-				"[2] Configure Settings\n" +
-				"[3] Exit"
-			);
-		}
+		return _isInSettingsMenu ? GetSettingsMenu() : GetMainMenu();
+	}
+
+	private string GetMainMenu()
+	{
+		return Markup.Escape(
+			"[cd <dir>] Change Directory\n" +
+			"[1] Concatenate & Copy Clipboard\n" +
+			"[2] Configure Settings\n" +
+			"[3] Exit"
+		);
+	}
+
+	private string GetSettingsMenu()
+	{
+		return Markup.Escape(
+			"[1] Show Hidden Files\n" +
+			"[2] Set Base Path\n" +
+			"[3] Set File Types\n" +
+			"[4] Set Clipboard Limit\n" +
+			"[5] Back\n" +
+			"\n") + GetCurrentSettings();
+	}
+
+	private string GetCurrentSettings()
+	{
+		return _ui.StyledText("Current Settings:\n", Color.Grey78).ToUpper() +
+			"Show Hidden Files: " + _ui.StyledText((_configurationService.GetShowHiddenFiles() ? "Yes" : "No"), Color.SteelBlue1_1) + "\n" +
+			"Base Path: " + _ui.StyledText(_configurationService.GetBaseDirectoryPath(), Color.SteelBlue1_1) + "\n" +
+			"Targeted File Types: " + _ui.StyledText(_configurationService.GetTargetedFileTypes(), Color.SteelBlue1_1) + "\n" +
+			"Clipboard Limit: " + _ui.StyledText(_configurationService.GetClipboardCharacterLimit().ToString(), Color.SteelBlue1_1);
 	}
 
 	private void ProcessCommand(string command)
@@ -82,25 +85,23 @@ public class Controller
 
 	private void ProcessMainCommand(string command)
 	{
-		if (command.StartsWith("cd"))
+		switch (command)
 		{
-			ChangeDirectory(command);
-		}
-		else if (command == "1")
-		{
-			ConcatenateFilesAndCopyToClipboard();
-		}
-		else if (command == "2")
-		{
-			_isInSettingsMenu = true;
-		}
-		else if (command == "3")
-		{
-			Environment.Exit(0);
-		}
-		else
-		{
-			DisplayErrorMessage();
+			case var s when s.StartsWith("cd"):
+				ChangeDirectory(s);
+				break;
+			case "1":
+				ConcatenateFilesAndCopyToClipboard();
+				break;
+			case "2":
+				_isInSettingsMenu = true;
+				break;
+			case "3":
+				Environment.Exit(0);
+				break;
+			default:
+				_ui.ShowMessageAndWait("Error: Invalid Command.");
+				break;
 		}
 	}
 
@@ -124,7 +125,7 @@ public class Controller
 				_isInSettingsMenu = false;
 				break;
 			default:
-				DisplayErrorMessage();
+				_ui.ShowMessageAndWait("Error: Invalid Command.");
 				break;
 		}
 	}
@@ -141,7 +142,7 @@ public class Controller
 			}
 			else
 			{
-				DisplayErrorMessage("Directory does not exist.");
+				_ui.ShowMessageAndWait("Error: Directory does not exist.");
 			}
 		}
 	}
@@ -149,26 +150,30 @@ public class Controller
 	private void ConcatenateFilesAndCopyToClipboard()
 	{
 		var result = _fileConcatenationService.ConcatenateFiles(_currentDirectory);
-		_ui.DisplayMessage(result.Message);
+		_ui.ShowMessage(result.Message);
 		if (result.Success)
 		{
-			_ui.DisplayMessage("Files concatenated and copied to clipboard.");
+			_ui.ShowMessageAndWait("Files concatenated and copied to clipboard.");
 		}
 		else
 		{
-			_ui.DisplayMessage("Error occurred during concatenation.");
+			_ui.ShowMessageAndWait("Error: Files not concatenated.");
 		}
 	}
 
 	private void ConfigureShowHiddenFiles()
 	{
-		string showHiddenFiles = _ui.GetInput("Show hidden files? (yes/no): ").ToLower();
-		while (showHiddenFiles != "yes" && showHiddenFiles != "no")
+		string showHiddenFiles;
+		do
 		{
-			_ui.DisplayMessage("Invalid input. Please enter 'yes' or 'no'.");
-			showHiddenFiles = _ui.GetInput("Show hidden files? (yes/no): ").ToLower();
-		}
-		_configurationService.SetShowHiddenFiles(showHiddenFiles == "yes");
+			showHiddenFiles = _ui.GetInput("Show hidden files? (y/n): ").ToLower();
+			if (showHiddenFiles != "y" && showHiddenFiles != "n")
+			{
+				_ui.ShowMessage("Invalid input. Please enter 'y' or 'n'.");
+			}
+		} while (showHiddenFiles != "y" && showHiddenFiles != "n");
+
+		_configurationService.SetShowHiddenFiles(showHiddenFiles == "y");
 	}
 
 	private void ConfigureBasePath()
@@ -181,8 +186,7 @@ public class Controller
 		}
 		else
 		{
-			_ui.DisplayMessage("Error: Directory does not exist.");
-			_ui.GetInput("Press any key to continue...");
+			_ui.ShowMessageAndWait("Error: Directory does not exist.");
 		}
 	}
 
@@ -198,19 +202,12 @@ public class Controller
 		if (int.TryParse(input, out int newLimit) && newLimit > 0)
 		{
 			_configurationService.SetClipboardCharacterLimit(newLimit);
-			_ui.DisplayMessage($"Clipboard character limit updated to {newLimit}.");
-			_ui.GetInput("Press any key to continue...");
+			_ui.ShowMessageAndWait($"Clipboard character limit updated to {newLimit}.");
 		}
 		else
 		{
-			_ui.DisplayMessage("Invalid input. Clipboard character limit remains unchanged.");
-			_ui.GetInput("Press any key to continue...");
+			_ui.ShowMessageAndWait("Error. Invalid command.");
 		}
 	}
 
-	public void DisplayErrorMessage(string errorMessage = "Invalid Command.")
-	{
-		_ui.DisplayMessage($"Error: {errorMessage}.");
-		Console.ReadKey();
-	}
 }
