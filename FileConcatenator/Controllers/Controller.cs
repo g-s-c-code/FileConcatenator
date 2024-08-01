@@ -5,17 +5,20 @@ namespace FileConcatenator;
 public class Controller
 {
 	private readonly SpectreUI _ui;
-	private readonly ConfigurationManager _configService;
+	private readonly ConfigurationManager _configurationService;
 	private readonly FileConcatenationService _fileConcatenationService;
 	private string _currentDirectory;
 	private bool _isInSettingsMenu;
 
-	public Controller(SpectreUI ui, ConfigurationManager configService, FileConcatenationService fileConcatenationService)
+	private const string no = "No";
+	private const string yes = "Yes";
+
+	public Controller(SpectreUI ui, ConfigurationManager configurationService, FileConcatenationService fileConcatenationService)
 	{
 		_ui = ui;
-		_configService = configService;
+		_configurationService = configurationService;
+		_currentDirectory = _configurationService.GetBaseDirectoryPath();
 		_fileConcatenationService = fileConcatenationService;
-		_currentDirectory = _configService.GetBaseDirectoryPath();
 		_isInSettingsMenu = false;
 	}
 
@@ -23,43 +26,44 @@ public class Controller
 	{
 		while (true)
 		{
-			string targetedFileTypes = _configService.GetTargetedFileTypes();
-
 			_ui.Clear();
 
-			var currentDirectory = _ui.DisplayMarkup(_currentDirectory);
-			var targetedFiles = _ui.DisplayMarkup(targetedFileTypes);
-			var commands = GetCommandList();
-			var directoriesTree = _ui.DisplayTree("Folders", _fileConcatenationService.GetDirectories(_currentDirectory));
-			var filesTree = _ui.DisplayTree("Files", _fileConcatenationService.GetFiles(_currentDirectory));
+			var directoriesTree = _fileConcatenationService.GetDirectories(_currentDirectory);
+			var filesTree = _fileConcatenationService.GetFiles(_currentDirectory);
 
-			_ui.MainLayout(targetedFiles, currentDirectory, _ui.DisplayMarkup(commands), directoriesTree, filesTree);
+			_ui.MainLayout(_configurationService.GetTargetedFileTypes(), _currentDirectory, DisplayAvailableCommands(), directoriesTree, filesTree);
 
-			var userCommands = AnsiConsole.Ask<string>("[bold]Enter command:[/]");
+			var userCommands = AnsiConsole.Ask<string>("Enter command:");
 
 			ProcessCommand(userCommands);
 		}
 	}
 
-	private string GetCommandList()
+	private string DisplayAvailableCommands()
 	{
 		if (_isInSettingsMenu)
 		{
 			return Markup.Escape(
-				"1 - Show hidden files\n" +
-				"2 - Set Base Path\n" +
-				"3 - File types to concatenate\n" +
-				"4 - Clipboard character limit\n" +
-				"5 - Back to main menu"
+				"[1] Show Hidden Files\n" +
+				"[2] Set Base Path\n" +
+				"[3] Set File Types\n" +
+				"[4] Set Clipboard Limit\n" +
+				"[5] Back\n" +
+				"\n" +
+				"Current Settings:\n" +
+				$"Show Hidden Files: {(_configurationService.GetShowHiddenFiles() == false ? no : yes)}\n" +
+				$"Base Path: {_configurationService.GetBaseDirectoryPath()}\n" +
+				$"Targeted File Types: {_configurationService.GetTargetedFileTypes()}\n" +
+				$"Clipboard Limit: {_configurationService.GetClipboardCharacterLimit()}"
 			);
 		}
 		else
 		{
 			return Markup.Escape(
-				"cd <directory> - Change Directory\n" +
-				"1 - Concatenate files and copy to clipboard\n" +
-				"2 - Configure Settings\n" +
-				"3 - Exit application"
+				"[cd <dir>] Change Directory\n" +
+				"[1] Concatenate Files and Copy to Clipboard\n" +
+				"[2] Configure Settings\n" +
+				"[3] Exit"
 			);
 		}
 	}
@@ -96,7 +100,7 @@ public class Controller
 		}
 		else
 		{
-			_ui.DisplayMessage("Error: Invalid command.");
+			DisplayErrorMessage();
 		}
 	}
 
@@ -120,7 +124,7 @@ public class Controller
 				_isInSettingsMenu = false;
 				break;
 			default:
-				_ui.DisplayMessage("Invalid choice.");
+				DisplayErrorMessage();
 				break;
 		}
 	}
@@ -137,7 +141,7 @@ public class Controller
 			}
 			else
 			{
-				_ui.DisplayMessage("Error: Directory does not exist.");
+				DisplayErrorMessage("Directory does not exist.");
 			}
 		}
 	}
@@ -164,7 +168,7 @@ public class Controller
 			_ui.DisplayMessage("Invalid input. Please enter 'yes' or 'no'.");
 			showHiddenFiles = _ui.GetInput("Show hidden files? (yes/no): ").ToLower();
 		}
-		_configService.SetShowHiddenFiles(showHiddenFiles == "yes");
+		_configurationService.SetShowHiddenFiles(showHiddenFiles == "yes");
 	}
 
 	private void ConfigureBasePath()
@@ -172,32 +176,41 @@ public class Controller
 		string newBasePath = _ui.GetInput("Enter new base path: ");
 		if (Directory.Exists(newBasePath))
 		{
-			_configService.SetBaseDirectoryPath(newBasePath);
+			_configurationService.SetBaseDirectoryPath(newBasePath);
 			_currentDirectory = newBasePath;
 		}
 		else
 		{
 			_ui.DisplayMessage("Error: Directory does not exist.");
+			_ui.GetInput("Press any key to continue...");
 		}
 	}
 
 	private void ConfigureFileTypes()
 	{
 		string fileTypes = _ui.GetInput("Enter the file types you wish to concatenate (comma separated, e.g., *.cs, *.js): ");
-		_configService.SetTargetedFileTypes(fileTypes);
+		_configurationService.SetTargetedFileTypes(fileTypes);
 	}
 
 	private void ConfigureClipboardLimit()
 	{
-		string input = _ui.GetInput($"Enter new clipboard character limit (current: {_configService.GetClipboardCharacterLimit()}): ");
+		string input = _ui.GetInput($"Enter new clipboard character limit (current: {_configurationService.GetClipboardCharacterLimit()}): ");
 		if (int.TryParse(input, out int newLimit) && newLimit > 0)
 		{
-			_configService.SetClipboardCharacterLimit(newLimit);
+			_configurationService.SetClipboardCharacterLimit(newLimit);
 			_ui.DisplayMessage($"Clipboard character limit updated to {newLimit}.");
+			_ui.GetInput("Press any key to continue...");
 		}
 		else
 		{
 			_ui.DisplayMessage("Invalid input. Clipboard character limit remains unchanged.");
+			_ui.GetInput("Press any key to continue...");
 		}
+	}
+
+	public void DisplayErrorMessage(string errorMessage = "Invalid Command.")
+	{
+		_ui.DisplayMessage($"Error: {errorMessage}.");
+		Console.ReadKey();
 	}
 }
