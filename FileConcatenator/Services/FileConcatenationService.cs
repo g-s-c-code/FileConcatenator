@@ -97,6 +97,6 @@ public class FileConcatenationService
 		}
 
 		ClipboardService.SetText(sb.ToString());
-		return accessDeniedFlag ? (true, "Note: Some files or directories could not be accessed and were skipped.") : (true, string.Empty);
+		return accessDeniedFlag ? (true, "Note: Some files or directories could not be accessed and were skipped.\n") : (true, string.Empty);
 	}
 }
