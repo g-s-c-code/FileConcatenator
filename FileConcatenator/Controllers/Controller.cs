@@ -1,4 +1,5 @@
 ﻿using Spectre.Console;
+using System.IO;
 
 namespace FileConcatenator;
 
@@ -23,17 +24,32 @@ public class Controller
 	{
 		while (true)
 		{
-			_ui.Clear();
-
-			var directoriesTree = _fileConcatenationService.GetDirectories(_currentDirectory);
-			var filesTree = _fileConcatenationService.GetFiles(_currentDirectory);
-
-			_ui.MainLayout(_configurationService.GetTargetedFileTypes(), _currentDirectory, DisplayAvailableCommands(), directoriesTree, filesTree);
-
-			var userCommands = AnsiConsole.Ask<string>(_ui.StyledText("Enter command:", Color.White));
-
-			ProcessCommand(userCommands);
+			try
+			{
+				_ui.Clear();
+				DisplayUI();
+				var userCommand = AnsiConsole.Ask<string>(_ui.StyledText("Enter command:", Color.White));
+				ProcessCommand(userCommand);
+			}
+			catch (Exception ex)
+			{
+				_ui.ShowMessageAndWait($"Unexpected error: {ex.Message}");
+			}
 		}
+	}
+
+	private void DisplayUI()
+	{
+		var directoriesTree = _fileConcatenationService.GetDirectories(_currentDirectory);
+		var filesTree = _fileConcatenationService.GetFiles(_currentDirectory);
+
+		_ui.MainLayout(
+			_configurationService.GetTargetedFileTypes(),
+			_currentDirectory,
+			DisplayAvailableCommands(),
+			directoriesTree,
+			filesTree
+		);
 	}
 
 	private string DisplayAvailableCommands()
@@ -58,17 +74,18 @@ public class Controller
 			"[2] Set Base Path\n" +
 			"[3] Set File Types\n" +
 			"[4] Set Clipboard Limit\n" +
-			"[5] Back\n" +
-			"\n") + GetCurrentSettings();
+			"[5] Back\n")
+		+ "\n"
+		+ GetCurrentSettings();
 	}
 
 	private string GetCurrentSettings()
 	{
 		return _ui.StyledText("Current Settings:\n", Color.Grey78).ToUpper() +
-			"Show Hidden Files: " + _ui.StyledText((_configurationService.GetShowHiddenFiles() ? "Yes" : "No"), Color.SteelBlue1_1) + "\n" +
-			"Base Path: " + _ui.StyledText(_configurationService.GetBaseDirectoryPath(), Color.SteelBlue1_1) + "\n" +
-			"Targeted File Types: " + _ui.StyledText(_configurationService.GetTargetedFileTypes(), Color.SteelBlue1_1) + "\n" +
-			"Clipboard Limit: " + _ui.StyledText(_configurationService.GetClipboardCharacterLimit().ToString(), Color.SteelBlue1_1);
+			$"Show Hidden Files: {_ui.StyledText(_configurationService.GetShowHiddenFiles() ? "Yes" : "No", Color.SteelBlue1_1)}\n" +
+			$"Base Path: {_ui.StyledText(_configurationService.GetBaseDirectoryPath(), Color.SteelBlue1_1)}\n" +
+			$"Targeted File Types: {_ui.StyledText(_configurationService.GetTargetedFileTypes(), Color.SteelBlue1_1)}\n" +
+			$"Clipboard Limit: {_ui.StyledText(_configurationService.GetClipboardCharacterLimit().ToString(), Color.SteelBlue1_1)}";
 	}
 
 	private void ProcessCommand(string command)
@@ -85,10 +102,10 @@ public class Controller
 
 	private void ProcessMainCommand(string command)
 	{
-		switch (command)
+		switch (command.ToLower())
 		{
-			case var s when s.StartsWith("cd"):
-				ChangeDirectory(s);
+			case var cmd when cmd.StartsWith("cd"):
+				ChangeDirectory(cmd);
 				break;
 			case "1":
 				ConcatenateFilesAndCopyToClipboard();
@@ -107,7 +124,7 @@ public class Controller
 
 	private void ProcessSettingsCommand(string command)
 	{
-		switch (command)
+		switch (command.ToLower())
 		{
 			case "1":
 				ConfigureShowHiddenFiles();
@@ -145,35 +162,30 @@ public class Controller
 				_ui.ShowMessageAndWait("Error: Directory does not exist.");
 			}
 		}
+		else
+		{
+			_ui.ShowMessageAndWait("Error: Invalid directory command.");
+		}
 	}
 
 	private void ConcatenateFilesAndCopyToClipboard()
 	{
 		var result = _fileConcatenationService.ConcatenateFiles(_currentDirectory);
-		_ui.ShowMessage(result.Message);
 		if (result.Success)
 		{
 			_ui.ShowMessageAndWait("Files concatenated and copied to clipboard.");
 		}
 		else
 		{
-			_ui.ShowMessageAndWait("Error: Files not concatenated.");
+			_ui.ShowMessageAndWait($"Error: {result.Message}");
 		}
 	}
 
 	private void ConfigureShowHiddenFiles()
 	{
-		string showHiddenFiles;
-		do
-		{
-			showHiddenFiles = _ui.GetInput("Show hidden files? (y/n): ").ToLower();
-			if (showHiddenFiles != "y" && showHiddenFiles != "n")
-			{
-				_ui.ShowMessage("Invalid input. Please enter 'y' or 'n'.");
-			}
-		} while (showHiddenFiles != "y" && showHiddenFiles != "n");
-
+		var showHiddenFiles = GetValidInput("Show hidden files? (y/n): ", new[] { "y", "n" });
 		_configurationService.SetShowHiddenFiles(showHiddenFiles == "y");
+		_ui.ShowMessageAndWait("Show hidden files setting updated.");
 	}
 
 	private void ConfigureBasePath()
@@ -183,6 +195,7 @@ public class Controller
 		{
 			_configurationService.SetBaseDirectoryPath(newBasePath);
 			_currentDirectory = newBasePath;
+			_ui.ShowMessageAndWait("Base path updated.");
 		}
 		else
 		{
@@ -194,19 +207,44 @@ public class Controller
 	{
 		string fileTypes = _ui.GetInput("Enter the file types you wish to concatenate (comma separated, e.g., *.cs, *.js): ");
 		_configurationService.SetTargetedFileTypes(fileTypes);
+		_ui.ShowMessageAndWait("Targeted file types updated.");
 	}
 
 	private void ConfigureClipboardLimit()
 	{
+		const int warningLimit = 10000000;
+		_ui.ShowMessage($"Warning: Setting a clipboard limit above {warningLimit} characters might cause issues on some systems.\n");
 		string input = _ui.GetInput($"Enter new clipboard character limit (current: {_configurationService.GetClipboardCharacterLimit()}): ");
-		if (int.TryParse(input, out int newLimit) && newLimit > 0)
+
+		if (int.TryParse(input, out int newLimit) && newLimit > 0)<
 		{
 			_configurationService.SetClipboardCharacterLimit(newLimit);
-			_ui.ShowMessageAndWait($"Clipboard character limit updated to {newLimit}.");
+			if (newLimit > warningLimit)
+			{
+				_ui.ShowMessageAndWait($"Warning: Setting a clipboard limit above {warningLimit} characters might cause issues on some systems.");
+			}
+			else
+			{
+				_ui.ShowMessageAndWait($"Clipboard character limit updated to {newLimit}.");
+			}
 		}
 		else
 		{
-			_ui.ShowMessageAndWait("Error. Invalid command.");
+			_ui.ShowMessageAndWait("Error: Invalid clipboard limit. Please enter a positive integer.");
 		}
+	}
+
+	private string GetValidInput(string prompt, string[] validOptions)
+	{
+		string input;
+		do
+		{
+			input = _ui.GetInput(prompt).ToLower();
+			if (!validOptions.Contains(input))
+			{
+				_ui.ShowMessage("Invalid input. Enter \"y\" or \"n\".\n");
+			}
+		} while (!validOptions.Contains(input));
+		return input;
 	}
 }
