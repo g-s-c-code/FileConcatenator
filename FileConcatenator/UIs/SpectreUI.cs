@@ -48,7 +48,7 @@ public class SpectreUI
 		return tree;
 	}
 
-	public void MainLayout(string targetedFiles, string currentDirectory, string commands, IEnumerable<string> directoriesTree, IEnumerable<string> filesTree)
+	public void MainLayout(string targetedFiles, string currentDirectory, string commands, string settings, IEnumerable<string> directoriesTree, IEnumerable<string> filesTree)
 	{
 		var targetedFilesTable = new Table();
 		targetedFilesTable.AddColumn(new TableColumn(StyledText("Targeted File Types:").ToUpper()));
@@ -63,9 +63,9 @@ public class SpectreUI
 		var commandsTable = new Table();
 		commandsTable.AddColumn(new TableColumn(StyledText("Commands:").ToUpper()));
 		commandsTable.AddRow(StyledText(commands, Color.White));
+		commandsTable.AddRow(StyledText(settings, Color.White));
 		commandsTable.Border = TableBorder.None;
 		commandsTable.Width(50);
-
 
 		var directoryTreeTable = new Table();
 		directoryTreeTable.AddColumn(new TableColumn(DisplayTree(StyledText("Folders:").ToUpper(), directoriesTree)));

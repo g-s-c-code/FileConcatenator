@@ -45,13 +45,14 @@ public class Controller
 		_ui.MainLayout(
 			_configurationService.GetTargetedFileTypes(),
 			_currentDirectory,
-			DisplayAvailableCommands(),
+			GetCommands(),
+			GetSettings(),
 			directoriesTree,
 			filesTree
 		);
 	}
 
-	private string DisplayAvailableCommands() => GetMainMenu();
+	private string GetCommands() => GetMainMenu();
 
 	private string GetMainMenu()
 	{
@@ -66,14 +67,14 @@ public class Controller
 			"[Q] Quit"
 		};
 
-		return Markup.Escape(string.Join("\n", commands) + "\n\n\n") + GetCurrentSettings();
+		return Markup.Escape(string.Join("\n", commands) + "\n\n\n");
 	}
 
-	private string GetCurrentSettings()
+	private string GetSettings()
 	{
 		var settings = new List<string>
 		{
-			_ui.StyledText("Current Settings:", Color.Grey78).ToUpper(),
+			_ui.StyledText("Settings:", Color.Grey78).ToUpper(),
 			$"Show Hidden Files: {_ui.StyledText(_configurationService.GetShowHiddenFiles() ? "Yes" : "No", Color.SteelBlue1_1)}",
 			$"Base Path: {_ui.StyledText(_configurationService.GetBaseDirectoryPath(), Color.SteelBlue1_1)}",
 			$"Targeted File Types: {_ui.StyledText(_configurationService.GetTargetedFileTypes(), Color.SteelBlue1_1)}",
@@ -175,8 +176,8 @@ public class Controller
 				.Title("\nSelect the file types you wish to concatenate:")
 				.NotRequired()
 				.PageSize(10)
-				.MoreChoicesText("[grey](Move up and down to reveal more file types)[/]")
-				.InstructionsText($"[grey](Press [steelblue1_1]{space}[/] to toggle a file type, [steelblue1_1]{enter}[/] to accept)[/]")
+				.MoreChoicesText("[white]Move up and down to reveal more file types[/]")
+				.InstructionsText($"[white]Press [steelblue1_1]{space}[/] to toggle a file type, [steelblue1_1]{enter}[/] to accept[/]")
 				.HighlightStyle(style)
 				.AddChoices(new[]
 				{
