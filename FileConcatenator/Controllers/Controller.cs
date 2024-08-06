@@ -1,4 +1,5 @@
 ﻿using Spectre.Console;
+using System.Collections.Generic;
 using System.IO;
 
 namespace FileConcatenator;
@@ -9,7 +10,6 @@ public class Controller
 	private readonly ConfigurationManager _configurationService;
 	private readonly FileConcatenationService _fileConcatenationService;
 	private string _currentDirectory;
-	private bool _isInSettingsMenu;
 
 	public Controller(SpectreUI ui, ConfigurationManager configurationService, FileConcatenationService fileConcatenationService)
 	{
@@ -17,7 +17,6 @@ public class Controller
 		_configurationService = configurationService;
 		_fileConcatenationService = fileConcatenationService;
 		_currentDirectory = _configurationService.GetBaseDirectoryPath();
-		_isInSettingsMenu = false;
 	}
 
 	public void Run()
@@ -54,7 +53,7 @@ public class Controller
 
 	private string DisplayAvailableCommands()
 	{
-		return _isInSettingsMenu ? GetSettingsMenu() : GetMainMenu();
+		return GetMainMenu();
 	}
 
 	private string GetMainMenu()
@@ -62,21 +61,17 @@ public class Controller
 		return Markup.Escape(
 			"[cd <dir>] Change Directory\n" +
 			"[1] Concatenate & Copy Clipboard\n" +
-			"[2] Configure Settings\n" +
-			"[3] Exit"
-		);
-	}
+			"[2] Show Hidden Files\n" +
+			"[3] Set Base Path\n" +
+			"[4] Set File Types\n" +
+			"[5] Set Clipboard Limit\n" +
+			"[Q] Quit" +
+			"\n" +
+			"\n" +
+			"\n"
+			) +
+			GetCurrentSettings();
 
-	private string GetSettingsMenu()
-	{
-		return Markup.Escape(
-			"[1] Show Hidden Files\n" +
-			"[2] Set Base Path\n" +
-			"[3] Set File Types\n" +
-			"[4] Set Clipboard Limit\n" +
-			"[5] Back\n")
-		+ "\n"
-		+ GetCurrentSettings();
 	}
 
 	private string GetCurrentSettings()
@@ -90,18 +85,6 @@ public class Controller
 
 	private void ProcessCommand(string command)
 	{
-		if (_isInSettingsMenu)
-		{
-			ProcessSettingsCommand(command);
-		}
-		else
-		{
-			ProcessMainCommand(command);
-		}
-	}
-
-	private void ProcessMainCommand(string command)
-	{
 		switch (command.ToLower())
 		{
 			case var cmd when cmd.StartsWith("cd"):
@@ -111,38 +94,22 @@ public class Controller
 				ConcatenateFilesAndCopyToClipboard();
 				break;
 			case "2":
-				_isInSettingsMenu = true;
+				ConfigureShowHiddenFiles();
 				break;
 			case "3":
+				ConfigureBasePath();
+				break;
+			case "4":
+				ConfigureFileTypes();
+				break;
+			case "5":
+				ConfigureClipboardLimit();
+				break;
+			case "Q" or "q":
 				Environment.Exit(0);
 				break;
 			default:
-				_ui.ShowMessageAndWait("Error: Invalid Command.");
-				break;
-		}
-	}
-
-	private void ProcessSettingsCommand(string command)
-	{
-		switch (command.ToLower())
-		{
-			case "1":
-				ConfigureShowHiddenFiles();
-				break;
-			case "2":
-				ConfigureBasePath();
-				break;
-			case "3":
-				ConfigureFileTypes();
-				break;
-			case "4":
-				ConfigureClipboardLimit();
-				break;
-			case "5":
-				_isInSettingsMenu = false;
-				break;
-			default:
-				_ui.ShowMessageAndWait("Error: Invalid Command.");
+				_ui.ShowMessageAndWait("Error: Invalid command.");
 				break;
 		}
 	}
@@ -164,7 +131,7 @@ public class Controller
 		}
 		else
 		{
-			_ui.ShowMessageAndWait("Error: Invalid directory command.");
+			_ui.ShowMessageAndWait("Error: Invalid command.");
 		}
 	}
 
@@ -205,8 +172,31 @@ public class Controller
 
 	private void ConfigureFileTypes()
 	{
-		string fileTypes = _ui.GetInput("Enter the file types you wish to concatenate (comma separated, e.g., *.cs, *.js): ");
-		_configurationService.SetTargetedFileTypes(fileTypes);
+		var space = Markup.Escape("[space]");
+		var enter = Markup.Escape("[enter]");
+
+		var fileTypes = AnsiConsole.Prompt(
+			new MultiSelectionPrompt<string>()
+				.Title("Select the file types you wish to concatenate:")
+				.NotRequired()
+				.PageSize(10)
+				.MoreChoicesText("[grey](Move up and down to reveal more file types)[/]")
+				.InstructionsText(
+					"[grey](Press [steelblue1_1]" + space + "[/] to toggle a file type, [steelblue1_1]" + enter + "[/] to accept)[/]")
+				.AddChoices(new[]
+				{
+				"*.txt", "*.cs", "*.js", "*.html", "*.xml", "*.json", "*.css", "*.md",
+				"*.py", "*.java", "*.cpp", "*.c", "*.h", "*.ts", "*.yaml", "*.yml"
+				}));
+
+		// Safety net: If no file types are selected, default to *.html
+		if (fileTypes.Count == 0)
+		{
+			fileTypes.Add("*.html");
+			_ui.ShowMessageAndWait("No file types were selected, so '*.html' was set as the default.\n");
+		}
+
+		_configurationService.SetTargetedFileTypes(string.Join(", ", fileTypes));
 		_ui.ShowMessageAndWait("Targeted file types updated.");
 	}
 
@@ -216,7 +206,7 @@ public class Controller
 		_ui.ShowMessage($"Warning: Setting a clipboard limit above {warningLimit} characters might cause issues on some systems.\n");
 		string input = _ui.GetInput($"Enter new clipboard character limit (current: {_configurationService.GetClipboardCharacterLimit()}): ");
 
-		if (int.TryParse(input, out int newLimit) && newLimit > 0)<
+		if (int.TryParse(input, out int newLimit) && newLimit > 0)
 		{
 			_configurationService.SetClipboardCharacterLimit(newLimit);
 			if (newLimit > warningLimit)
@@ -242,7 +232,7 @@ public class Controller
 			input = _ui.GetInput(prompt).ToLower();
 			if (!validOptions.Contains(input))
 			{
-				_ui.ShowMessage("Invalid input. Enter \"y\" or \"n\".\n");
+				_ui.ShowMessage("Invalid command. Enter \"y\" or \"n\".\n");
 			}
 		} while (!validOptions.Contains(input));
 		return input;
