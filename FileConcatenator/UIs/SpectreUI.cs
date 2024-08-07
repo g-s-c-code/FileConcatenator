@@ -48,35 +48,24 @@ public class SpectreUI
 		return tree;
 	}
 
-	public void MainLayout(string targetedFiles, string currentDirectory, string commands, string settings, IEnumerable<string> directoriesTree, IEnumerable<string> filesTree)
+	public void MainLayout(string currentDirectory, string commands, string settings, IEnumerable<string> directoriesTree, IEnumerable<string> filesTree)
 	{
-		var targetedFilesTable = new Table();
-		targetedFilesTable.AddColumn(new TableColumn(StyledText("Targeted File Types:").ToUpper()));
-		targetedFilesTable.AddColumn(new TableColumn(StyledText(targetedFiles, Color.SteelBlue1_1)));
-		targetedFilesTable.Border = TableBorder.None;
-
 		var currentDirectoryTable = new Table();
-		currentDirectoryTable.AddColumn(new TableColumn(StyledText("Directory:").ToUpper()));
-		currentDirectoryTable.AddColumn(new TableColumn(StyledText(currentDirectory, Color.SteelBlue1_1)));
+		currentDirectoryTable.AddColumn(new TableColumn(StyledText("Current Directory:").ToUpper() + " " + StyledText(currentDirectory, Color.White)));
+		currentDirectoryTable.AddColumn(new TableColumn(""));
+		currentDirectoryTable.AddRow(DisplayTree(StyledText("\nFolders:").ToUpper(), directoriesTree), (DisplayTree(StyledText("\nFiles:").ToUpper(), filesTree)));
 		currentDirectoryTable.Border = TableBorder.None;
 
 		var commandsTable = new Table();
-		commandsTable.AddColumn(new TableColumn(StyledText("Commands:").ToUpper()));
-		commandsTable.AddRow(StyledText(commands, Color.White));
+		commandsTable.AddColumn(new TableColumn(StyledText("Current Settings:").ToUpper()));
 		commandsTable.AddRow(StyledText(settings, Color.White));
+		commandsTable.AddRow(StyledText(commands, Color.White));
 		commandsTable.Border = TableBorder.None;
 		commandsTable.Width(50);
 
-		var directoryTreeTable = new Table();
-		directoryTreeTable.AddColumn(new TableColumn(DisplayTree(StyledText("Folders:").ToUpper(), directoriesTree)));
-		directoryTreeTable.AddColumn(new TableColumn(DisplayTree(StyledText("Files:").ToUpper(), filesTree)));
-		directoryTreeTable.Border = TableBorder.None;
-		directoryTreeTable.Collapse();
-
 		var mainLayout = new Table();
-		mainLayout.AddColumn(new TableColumn(targetedFilesTable));
+		mainLayout.AddColumn(new TableColumn(commandsTable));
 		mainLayout.AddColumn(new TableColumn(currentDirectoryTable));
-		mainLayout.AddRow(commandsTable, directoryTreeTable);
 		mainLayout.Border = TableBorder.DoubleEdge;
 		mainLayout.BorderColor(Color.Grey66);
 

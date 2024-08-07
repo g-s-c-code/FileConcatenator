@@ -43,7 +43,6 @@ public class Controller
 		var filesTree = _fileConcatenationService.GetFiles(_currentDirectory);
 
 		_ui.MainLayout(
-			_configurationService.GetTargetedFileTypes(),
 			_currentDirectory,
 			GetCommands(),
 			GetSettings(),
@@ -56,29 +55,33 @@ public class Controller
 
 	private string GetMainMenu()
 	{
+		var title = _ui.StyledText("Commands:", Color.Grey78).ToUpper();
+
 		var commands = new List<string>
 		{
 			"[cd <dir>] Change Directory",
 			"[1] Concatenate & Copy Clipboard",
-			"[2] Show Hidden Files",
-			"[3] Set Base Path",
+			"[2] Set Base Path",
+			"[3] Set Clipboard Limit",
 			"[4] Set File Types",
-			"[5] Set Clipboard Limit",
+			"[5] Show Hidden Files",
+			"",
+			"[H] Help",
 			"[Q] Quit"
 		};
 
-		return Markup.Escape(string.Join("\n", commands) + "\n\n\n");
+		return $"{title}\n" + Markup.Escape(string.Join("\n", commands));
 	}
 
 	private string GetSettings()
 	{
 		var settings = new List<string>
 		{
-			_ui.StyledText("Settings:", Color.Grey78).ToUpper(),
-			$"Show Hidden Files: {_ui.StyledText(_configurationService.GetShowHiddenFiles() ? "Yes" : "No", Color.SteelBlue1_1)}",
 			$"Base Path: {_ui.StyledText(_configurationService.GetBaseDirectoryPath(), Color.SteelBlue1_1)}",
+			$"Clipboard Limit: {_ui.StyledText(_configurationService.GetClipboardCharacterLimit().ToString(), Color.SteelBlue1_1)}",
+			$"Show Hidden Files: {_ui.StyledText(_configurationService.GetShowHiddenFiles() ? "Yes" : "No", Color.SteelBlue1_1)}",
 			$"Targeted File Types: {_ui.StyledText(_configurationService.GetTargetedFileTypes(), Color.SteelBlue1_1)}",
-			$"Clipboard Limit: {_ui.StyledText(_configurationService.GetClipboardCharacterLimit().ToString(), Color.SteelBlue1_1)}"
+			""
 		};
 
 		return string.Join("\n", settings);
@@ -95,16 +98,19 @@ public class Controller
 				ConcatenateFilesAndCopyToClipboard();
 				break;
 			case "2":
-				ConfigureShowHiddenFiles();
+				ConfigureBasePath();
 				break;
 			case "3":
-				ConfigureBasePath();
+				ConfigureClipboardLimit();
 				break;
 			case "4":
 				ConfigureFileTypes();
 				break;
 			case "5":
-				ConfigureClipboardLimit();
+				ConfigureShowHiddenFiles();
+				break;
+			case "h":
+				ShowHelp();
 				break;
 			case "q":
 				Environment.Exit(0);
@@ -114,6 +120,38 @@ public class Controller
 				break;
 		}
 	}
+
+	private void ShowHelp()
+	{
+		var helpText = new List<string>
+	{
+		"File Concatenator Application",
+		"",
+		"[bold underline]Purpose:[/]",
+		"This application concatenates text files of specified types from a selected directory and copies the combined content to your clipboard.",
+		"",
+		"[bold underline]Usage Instructions:[/]",
+		"[cd <directory>] - Changes the current directory to the specified path.",
+		"[1] Concatenate & Copy Clipboard - Concatenates targeted files in the current directory and copies the result to the clipboard.",
+		"[2] Set Base Path - Changes the base directory for file operations.",
+		"[3] Set Clipboard Limit - Sets the maximum number of characters that can be copied to the clipboard.",
+		"[4] Set File Types - Select the file types to concatenate (e.g., *.txt, *.cs, etc.).",
+		"[5] Show Hidden Files - Toggles the visibility of hidden files in the directory listing.",
+		"[h] Help - Displays this help information.",
+		"[q] Quit - Exits the application.",
+		"",
+		"[bold underline]Tips & Recommendations:[/]",
+		"- Use '[cd <directory>]' to navigate to the desired folder before running any operations.",
+		"- Set a reasonable clipboard limit to avoid issues with large text blocks.",
+		"- If no file types are selected, '*.html' will be used by default.",
+		"- Hidden files are not shown by default; use the '[5] Show Hidden Files' option to include them.",
+		"",
+		"[bold]Remember:[/] All settings are persistent and will be saved between sessions, ensuring a seamless experience each time you run the application."
+	};
+
+		_ui.ShowMessageAndWait(string.Join("\n", helpText));
+	}
+
 
 	private void ChangeDirectory(string command)
 	{
@@ -169,7 +207,6 @@ public class Controller
 	{
 		var space = Markup.Escape("[space]");
 		var enter = Markup.Escape("[enter]");
-		var style = new Style().Foreground(Color.SteelBlue1_1).Decoration(Decoration.Bold);
 
 		var fileTypes = AnsiConsole.Prompt(
 			new MultiSelectionPrompt<string>()
@@ -178,7 +215,6 @@ public class Controller
 				.PageSize(10)
 				.MoreChoicesText("[white]Move up and down to reveal more file types[/]")
 				.InstructionsText($"[white]Press [steelblue1_1]{space}[/] to toggle a file type, [steelblue1_1]{enter}[/] to accept[/]")
-				.HighlightStyle(style)
 				.AddChoices(new[]
 				{
 				"*.txt", "*.cs", "*.js", "*.html", "*.xml", "*.json", "*.css", "*.md",
