@@ -53,7 +53,7 @@ public class SpectreUI
 		var currentDirectoryTable = new Table();
 		currentDirectoryTable.AddColumn(new TableColumn(StyledText("Current Directory:").ToUpper() + " " + StyledText(currentDirectory, Color.White)));
 		currentDirectoryTable.AddColumn(new TableColumn(""));
-		currentDirectoryTable.AddRow(DisplayTree(StyledText("\nFolders:").ToUpper(), directoriesTree), (DisplayTree(StyledText("\nFiles:").ToUpper(), filesTree)));
+		currentDirectoryTable.AddRow(DisplayTree(StyledText("\nFolders:").ToUpper(), directoriesTree), DisplayTree(StyledText("\nFiles:").ToUpper(), filesTree));
 		currentDirectoryTable.Border = TableBorder.None;
 
 		var commandsTable = new Table();

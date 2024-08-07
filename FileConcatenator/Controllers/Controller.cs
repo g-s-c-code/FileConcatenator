@@ -1,6 +1,4 @@
 ﻿using Spectre.Console;
-using System.Collections.Generic;
-using System.IO;
 
 namespace FileConcatenator;
 
@@ -230,7 +228,6 @@ public class Controller
 		_configurationService.SetTargetedFileTypes(string.Join(", ", fileTypes));
 		_ui.ShowMessageAndWait("Targeted file types updated.");
 	}
-
 
 	private void ConfigureClipboardLimit()
 	{
