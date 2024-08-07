@@ -223,8 +223,8 @@ public class Controller
 
 		if (fileTypes.Count == 0)
 		{
-			fileTypes.Add("*.html");
-			_ui.ShowMessageAndWait("No file types were selected, so '*.html' was set as the default.\n");
+			fileTypes.Add("*.cs");
+			_ui.ShowMessageAndWait("No file types were selected, so '*.cs' was set as the default.\n");
 		}
 
 		_configurationService.SetTargetedFileTypes(string.Join(", ", fileTypes));
