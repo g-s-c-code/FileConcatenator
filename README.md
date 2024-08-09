@@ -54,7 +54,7 @@ After running the application, you will be presented with a command-line interfa
 
 - **Set File Types**: To focus on specific file types, like `.cs` and `.txt`, use:
   ```bash
-  4
+  3
   ```
   Then select the file types from the list presented.
 
