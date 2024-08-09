@@ -40,6 +40,7 @@ After running the application, you will be presented with a command-line interfa
 - **`4` Set Base Path (enter manually)**: Manually set the base directory for future file operations.
 - **`5` Set Base Path to Current Directory**: Quickly sets the base path to the current directory.
 - **`6` Show Hidden Files**: Toggle the visibility of hidden files in the directory listing.
+- **`7` Change Theme**: Change the UI color scheme.
 - **`H` Help**: Displays detailed help information.
 - **`Q` Quit**: Exits the application.
 
