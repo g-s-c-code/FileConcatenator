@@ -35,13 +35,13 @@ After running the application, you will be presented with a command-line interfa
 
 - **`cd <directory>`**: Change the current working directory.
 - **`1` Concatenate & Copy to Clipboard**: Concatenates the files in the current directory (based on the specified file types) and copies the result to the clipboard.
-- **`2` Set Base Path**: Sets the base directory for future file operations.
-- **`3` Set Clipboard Limit**: Adjust the maximum number of characters to copy to the clipboard.
-- **`4` Set File Types**: Specify the file types to target during concatenation (e.g., `*.cs, *.txt`).
-- **`5` Show Hidden Files**: Toggle the visibility of hidden files in the directory listing.
-- **`6` Set Base Path to Current Directory**: Quickly sets the base path to the current directory.
-- **`h` Help**: Displays detailed help information.
-- **`q` Quit**: Exits the application.
+- **`2` Set Clipboard Limit**: Adjust the maximum number of characters to copy to the clipboard.
+- **`3` Set File Types**: Specify the file types to target during concatenation (e.g., `*.cs, *.txt`).
+- **`4` Set Base Path (enter manually)**: Manually set the base directory for future file operations.
+- **`5` Set Base Path to Current Directory**: Quickly sets the base path to the current directory.
+- **`6` Show Hidden Files**: Toggle the visibility of hidden files in the directory listing.
+- **`H` Help**: Displays detailed help information.
+- **`Q` Quit**: Exits the application.
 
 ### Examples
 
@@ -76,5 +76,3 @@ You can manually edit the `settings.json` file if needed, or adjust settings thr
 - **Directory Structure**: Use the `cd` command to navigate to the correct directory before concatenating files, especially if working in nested directory structures.
 
 If you encounter any issues or have suggestions for improvements, feel free to contribute to the project or open an issue on the [GitHub repository](https://github.com/g-s-c-code/FileConcatenator).
-
-// GSC
