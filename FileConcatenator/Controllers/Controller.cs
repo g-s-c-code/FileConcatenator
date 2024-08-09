@@ -31,7 +31,7 @@ public class Controller
 			{
 				_ui.Clear();
 				DisplayUserInterface();
-				var userCommand = AnsiConsole.Ask<string>(_ui.StyledText("Enter command:"));
+				var userCommand = AnsiConsole.Ask<string>(_ui.Text("Enter command:"));
 				ProcessCommand(userCommand);
 			}
 			catch (Exception exception)
@@ -97,10 +97,10 @@ public class Controller
 	{
 		var settings = new List<string>
 		{
-			$"{_ui.StyledText(_configurationManager.GetClipboardCharacterLimit().ToString())}",
-			$"{_ui.StyledText(_configurationManager.GetTargetedFileTypes())}",
-			$"{_ui.StyledText(_configurationManager.GetBaseDirectoryPath())}",
-			$"{_ui.StyledText(_configurationManager.GetShowHiddenFiles() ? "Yes" : "No")}",
+			_configurationManager.GetClipboardCharacterLimit().ToString(),
+			_configurationManager.GetTargetedFileTypes(),
+			_configurationManager.GetBaseDirectoryPath(),
+			_configurationManager.GetShowHiddenFiles() ? "Yes" : "No",
 			""
 		};
 
@@ -296,11 +296,11 @@ public class Controller
 	private void ChangeTheme()
 	{
 		var themes = new Dictionary<string, Theme>
-{
-	{"Default", new Theme(Color.White, Color.Grey78, Color.RosyBrown, Color.SteelBlue1_1, Color.Grey78)},
-	{"Dark", new Theme(Color.DarkSlateGray2, Color.SlateBlue1, Color.DodgerBlue1, Color.White, Color.SlateBlue1)},
-	{"Light", new Theme(Color.White, Color.Grey, Color.RoyalBlue1, Color.White, Color.DarkSlateGray1)}
-};
+	{
+		{"Default", new Theme(Color.White, Color.Grey78, Color.RosyBrown, Color.SteelBlue1_1, Color.Grey78)},
+		{"Dark", new Theme(Color.DarkSlateGray2, Color.SlateBlue1, Color.DodgerBlue1, Color.White, Color.SlateBlue1)},
+		{"Light", new Theme(Color.White, Color.Grey, Color.RoyalBlue1, Color.White, Color.DarkSlateGray1)}
+	};
 
 		var choice = AnsiConsole.Prompt(
 			new SelectionPrompt<string>()
@@ -308,8 +308,10 @@ public class Controller
 				.AddChoices(themes.Keys));
 
 		_ui.SetTheme(themes[choice]);
+		_configurationManager.SetSelectedTheme(choice);
 		_ui.ShowMessageAndWait("Theme updated.");
 	}
+
 
 	private bool DirectoryExists(string path) => Directory.Exists(path);
 }

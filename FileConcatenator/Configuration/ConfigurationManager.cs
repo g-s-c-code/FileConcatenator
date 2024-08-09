@@ -46,6 +46,17 @@ public class ConfigurationManager
 		File.WriteAllText(_settingsFilePath, JsonConvert.SerializeObject(_configuration, Formatting.Indented));
 	}
 
+	public string GetSelectedTheme()
+	{
+		return _configuration.SelectedTheme ?? "Default";
+	}
+
+	public void SetSelectedTheme(string theme)
+	{
+		_configuration.SelectedTheme = theme;
+		SaveConfiguration();
+	}
+
 	private string GetInitialBaseDirectoryPath()
 	{
 		if (Environment.OSVersion.Platform == PlatformID.Win32NT)

@@ -37,12 +37,12 @@ public class SpectreUI
 	{
 		return AnsiConsole.Ask<string>(input);
 	}
-	public string StyledText(string text, Color? color = null)
+	public string Text(string text, Color? color = null)
 	{
 		return $"[bold {color ?? Color.White}]{text}[/]";
 	}
 
-	public string StyledHeader(string text, Color? color = null)
+	public string Header(string text, Color? color = null)
 	{
 		return $"[bold {color ?? Color.Grey78}]{text}[/]";
 	}
@@ -55,7 +55,7 @@ public class SpectreUI
 		};
 		foreach (var item in items)
 		{
-			tree.AddNode(StyledText(Markup.Escape(item), _theme.TextColor));
+			tree.AddNode(Text(Markup.Escape(item), _theme.TextColor));
 		}
 		return tree;
 	}
@@ -63,24 +63,24 @@ public class SpectreUI
 	public void MainLayout(string currentDirectory, string commands, string settingsHeaders, string currentSettings, IEnumerable<string> directoriesTree, IEnumerable<string> filesTree)
 	{
 		var rightTableColumn = new Table();
-		rightTableColumn.AddColumn(new TableColumn(StyledHeader("Current Directory:").ToUpper() + " " + StyledText(currentDirectory.ToUpper(), _theme.AccentColor)));
+		rightTableColumn.AddColumn(new TableColumn(Header("Current Directory:").ToUpper() + " " + Text(currentDirectory.ToUpper(), _theme.AccentColor)));
 		rightTableColumn.AddColumn(new TableColumn(""));
-		rightTableColumn.AddRow(DisplayTree(StyledHeader("\nFolders:").ToUpper(), directoriesTree), DisplayTree(StyledHeader("\nFiles:").ToUpper(), filesTree));
+		rightTableColumn.AddRow(DisplayTree(Header("\nFolders:").ToUpper(), directoriesTree), DisplayTree(Header("\nFiles:").ToUpper(), filesTree));
 		rightTableColumn.Border = TableBorder.None;
 
 		var upperLeftColumn = new Table();
-		upperLeftColumn.AddColumn(new TableColumn(StyledText(settingsHeaders, _theme.TextColor)));
-		upperLeftColumn.AddColumn(new TableColumn(StyledText(currentSettings, _theme.AccentColor)));
+		upperLeftColumn.AddColumn(new TableColumn(Text(settingsHeaders, _theme.TextColor)));
+		upperLeftColumn.AddColumn(new TableColumn(Text(currentSettings, _theme.AccentColor)));
 		upperLeftColumn.Border = TableBorder.None;
 
 		var lowerLeftColumn = new Table();
-		lowerLeftColumn.AddColumn(new TableColumn(StyledText(commands, _theme.TextColor)));
+		lowerLeftColumn.AddColumn(new TableColumn(Text(commands, _theme.TextColor)));
 		lowerLeftColumn.Border = TableBorder.None;
 
 		var leftTableColumn = new Table();
-		leftTableColumn.AddColumn(new TableColumn(StyledHeader("Current Settings:").ToUpper()));
+		leftTableColumn.AddColumn(new TableColumn(Header("Current Settings:").ToUpper()));
 		leftTableColumn.AddRow(upperLeftColumn);
-		leftTableColumn.AddRow(StyledHeader("Commands:").ToUpper());
+		leftTableColumn.AddRow(Header("Commands:").ToUpper());
 		leftTableColumn.AddRow(lowerLeftColumn);
 		leftTableColumn.Border = TableBorder.None;
 		leftTableColumn.Width(50);
