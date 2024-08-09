@@ -7,14 +7,14 @@ public class SpectreUI
 {
 	private Theme _theme;
 
-	public SpectreUI(Theme initialTheme)
+	public SpectreUI(Theme theme)
 	{
-		_theme = initialTheme;
+		_theme = theme;
 	}
 
-	public void SetTheme(Theme newTheme)
+	public void SetTheme(Theme theme)
 	{
-		_theme = newTheme;
+		_theme = theme;
 	}
 
 	public void Clear()
@@ -35,6 +35,8 @@ public class SpectreUI
 
 	public string GetInput(string input)
 	{
+		Text styledInput = new Text(input, _theme.TextColor);
+
 		return AnsiConsole.Ask<string>(input);
 	}
 	public string Text(string text, Color? color = null)
@@ -44,7 +46,7 @@ public class SpectreUI
 
 	public string Header(string text, Color? color = null)
 	{
-		return $"[bold {color ?? Color.Grey78}]{text}[/]";
+		return $"[bold underline {color ?? Color.Grey78}]{text}[/]";
 	}
 
 	public IRenderable DisplayTree(string header, IEnumerable<string> items)
@@ -63,9 +65,9 @@ public class SpectreUI
 	public void MainLayout(string currentDirectory, string commands, string settingsHeaders, string currentSettings, IEnumerable<string> directoriesTree, IEnumerable<string> filesTree)
 	{
 		var rightTableColumn = new Table();
-		rightTableColumn.AddColumn(new TableColumn(Header("Current Directory:").ToUpper() + " " + Text(currentDirectory.ToUpper(), _theme.AccentColor)));
+		rightTableColumn.AddColumn(new TableColumn(Header("Current Directory:".ToUpper(), _theme.HeaderColor) + " " + Text(currentDirectory.ToUpper(), _theme.AccentColor)));
 		rightTableColumn.AddColumn(new TableColumn(""));
-		rightTableColumn.AddRow(DisplayTree(Header("\nFolders:").ToUpper(), directoriesTree), DisplayTree(Header("\nFiles:").ToUpper(), filesTree));
+		rightTableColumn.AddRow(DisplayTree(Header("\nFolders:".ToUpper(), _theme.HeaderColor), directoriesTree), DisplayTree(Header("\nFiles:".ToUpper(), _theme.HeaderColor), filesTree));
 		rightTableColumn.Border = TableBorder.None;
 
 		var upperLeftColumn = new Table();
@@ -78,9 +80,9 @@ public class SpectreUI
 		lowerLeftColumn.Border = TableBorder.None;
 
 		var leftTableColumn = new Table();
-		leftTableColumn.AddColumn(new TableColumn(Header("Current Settings:").ToUpper()));
+		leftTableColumn.AddColumn(new TableColumn(Header("Current Settings:".ToUpper(), _theme.HeaderColor)));
 		leftTableColumn.AddRow(upperLeftColumn);
-		leftTableColumn.AddRow(Header("Commands:").ToUpper());
+		leftTableColumn.AddRow(Header("Commands:".ToUpper(), _theme.HeaderColor));
 		leftTableColumn.AddRow(lowerLeftColumn);
 		leftTableColumn.Border = TableBorder.None;
 		leftTableColumn.Width(50);

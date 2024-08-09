@@ -48,12 +48,12 @@ public class ConfigurationManager
 
 	public string GetSelectedTheme()
 	{
-		return _configuration.SelectedTheme ?? "Default";
+		return _configuration.Theme ?? "Default";
 	}
 
 	public void SetSelectedTheme(string theme)
 	{
-		_configuration.SelectedTheme = theme;
+		_configuration.Theme = theme;
 		SaveConfiguration();
 	}
 

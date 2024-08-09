@@ -31,7 +31,7 @@ public class Controller
 			{
 				_ui.Clear();
 				DisplayUserInterface();
-				var userCommand = AnsiConsole.Ask<string>(_ui.Text("Enter command:"));
+				var userCommand = _ui.GetInput("Enter command:");
 				ProcessCommand(userCommand);
 			}
 			catch (Exception exception)
@@ -298,8 +298,8 @@ public class Controller
 		var themes = new Dictionary<string, Theme>
 	{
 		{"Default", new Theme(Color.White, Color.Grey78, Color.RosyBrown, Color.SteelBlue1_1, Color.Grey78)},
-		{"Dark", new Theme(Color.DarkSlateGray2, Color.SlateBlue1, Color.DodgerBlue1, Color.White, Color.SlateBlue1)},
-		{"Light", new Theme(Color.White, Color.Grey, Color.RoyalBlue1, Color.White, Color.DarkSlateGray1)}
+		{"Pastel", new Theme(Color.LightCyan3, Color.MistyRose1, Color.LightSteelBlue1, Color.PaleGreen3_1, Color.PaleVioletRed1)},
+		{"Minimalistic", new Theme(Color.White, Color.White, Color.White, Color.White, Color.Black)}
 	};
 
 		var choice = AnsiConsole.Prompt(
