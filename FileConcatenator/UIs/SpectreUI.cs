@@ -28,10 +28,15 @@ public class SpectreUI
 
 	public string StyledText(string text, Color? color = null)
 	{
-		color ??= Color.Grey78;
+		color ??= Color.White;
 		return $"[bold {color}]{text}[/]";
 	}
 
+	public string StyledHeader(string text, Color? color = null)
+	{
+		color ??= Color.Grey78;
+		return $"[bold underline {color}]{text}[/]";
+	}
 
 	public IRenderable DisplayTree(string header, IEnumerable<string> items)
 	{
@@ -51,9 +56,9 @@ public class SpectreUI
 	public void MainLayout(string currentDirectory, string commands, string settingsHeaders, string currentSettings, IEnumerable<string> directoriesTree, IEnumerable<string> filesTree)
 	{
 		var currentDirectoryTable = new Table();
-		currentDirectoryTable.AddColumn(new TableColumn(StyledText("Current Directory:").ToUpper() + " " + StyledText(currentDirectory, Color.White)));
+		currentDirectoryTable.AddColumn(new TableColumn(StyledHeader("Current Directory:").ToUpper() + " " + StyledText(currentDirectory.ToUpper(), Color.SteelBlue1_1)));
 		currentDirectoryTable.AddColumn(new TableColumn(""));
-		currentDirectoryTable.AddRow(DisplayTree(StyledText("\nFolders:").ToUpper(), directoriesTree), DisplayTree(StyledText("\nFiles:").ToUpper(), filesTree));
+		currentDirectoryTable.AddRow(DisplayTree(StyledHeader("\nFolders:").ToUpper(), directoriesTree), DisplayTree(StyledHeader("\nFiles:").ToUpper(), filesTree));
 		currentDirectoryTable.Border = TableBorder.None;
 
 		var settingsTable = new Table();
@@ -62,7 +67,7 @@ public class SpectreUI
 		settingsTable.Border = TableBorder.None;
 
 		var commandsTable = new Table();
-		commandsTable.AddColumn(new TableColumn(StyledText("Current Settings:").ToUpper()));
+		commandsTable.AddColumn(new TableColumn(StyledHeader("Current Settings:").ToUpper()));
 		commandsTable.AddRow(settingsTable);
 		commandsTable.AddRow(StyledText(commands, Color.White));
 		commandsTable.Border = TableBorder.None;
@@ -71,8 +76,8 @@ public class SpectreUI
 		var mainLayout = new Table();
 		mainLayout.AddColumn(new TableColumn(commandsTable));
 		mainLayout.AddColumn(new TableColumn(currentDirectoryTable));
-		mainLayout.Border = TableBorder.DoubleEdge;
-		mainLayout.BorderColor(Color.Grey66);
+		mainLayout.Border = TableBorder.Minimal;
+		mainLayout.BorderColor(Color.White);
 
 		AnsiConsole.Write(mainLayout);
 	}

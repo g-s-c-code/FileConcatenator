@@ -41,10 +41,10 @@ public class Controller
 		var filesTree = _fileConcatenationService.GetFiles(_currentDirectory);
 
 		_ui.MainLayout(
-			_currentDirectory, // Preserve original casing here
-			GetCommands(),
-			GetSettingsHeaders(),
-			GetCurrentSettings(),
+			_currentDirectory,
+			GetCommands().ToUpper(),
+			GetSettingsHeaders().ToUpper(),
+			GetCurrentSettings().ToUpper(),
 			directoriesTree,
 			filesTree
 		);
@@ -54,17 +54,18 @@ public class Controller
 
 	private string GetMainMenu()
 	{
-		var title = _ui.StyledText("Commands:", Color.Grey78);
+		var title = _ui.StyledHeader("Commands:");
 
 		var commands = new List<string>
 		{
-			"[cd <dir>] Change Directory",
 			"[1] Concatenate & Copy To Clipboard",
 			"[2] Set Base Path",
 			"[3] Set Clipboard Limit",
 			"[4] Set File Types",
-			"[5] Show Hidden Files",
-			"[6] Set Base Path to Current Directory",
+			"[5] Set Base Path to Current Directory",
+			"[6] Show Hidden Files",
+			"",
+			"[cd <dir>] Change Directory",
 			"",
 			"[H] Help",
 			"[Q] Quit"
@@ -91,8 +92,8 @@ public class Controller
 	{
 		var settings = new List<string>
 		{
-			$"{_ui.StyledText(_configurationService.GetBaseDirectoryPath(), Color.SteelBlue1_1)}", // Preserve original casing here
-            $"{_ui.StyledText(_configurationService.GetClipboardCharacterLimit().ToString(), Color.SteelBlue1_1)}",
+			$"{_ui.StyledText(_configurationService.GetBaseDirectoryPath(), Color.SteelBlue1_1)}",
+			$"{_ui.StyledText(_configurationService.GetClipboardCharacterLimit().ToString(), Color.SteelBlue1_1)}",
 			$"{_ui.StyledText(_configurationService.GetShowHiddenFiles() ? "Yes" : "No", Color.SteelBlue1_1)}",
 			$"{_ui.StyledText(_configurationService.GetTargetedFileTypes(), Color.SteelBlue1_1)}",
 			""
@@ -121,10 +122,10 @@ public class Controller
 				ConfigureFileTypes();
 				break;
 			case "5":
-				ConfigureShowHiddenFiles();
+				SetBasePathToCurrentDirectory();
 				break;
 			case "6":
-				SetBasePathToCurrentDirectory();
+				ConfigureShowHiddenFiles();
 				break;
 			case "h":
 				ShowHelp();
