@@ -64,9 +64,9 @@ public class Controller
 		var commands = new List<string>
 		{
 			"[1] Concatenate & Copy To Clipboard",
-			"[2] Set Base Path",
-			"[3] Set Clipboard Limit",
-			"[4] Set File Types",
+			"[2] Set Clipboard Limit",
+			"[3] Set File Types",
+			"[4] Set Base Path (enter manually)",
 			"[5] Set Base Path to Current Directory",
 			"[6] Show Hidden Files",
 			"",
@@ -83,10 +83,10 @@ public class Controller
 	{
 		var settings = new List<string>
 		{
-			"Base Path:",
 			"Clipboard Limit:",
-			"Show Hidden Files:",
 			"Targeted File Types:",
+			"Base Path:",
+			"Show Hidden Files:",
 			""
 		};
 
@@ -97,10 +97,10 @@ public class Controller
 	{
 		var settings = new List<string>
 		{
-			$"{_ui.StyledText(_configurationService.GetBaseDirectoryPath(), Color.SteelBlue1_1)}",
 			$"{_ui.StyledText(_configurationService.GetClipboardCharacterLimit().ToString(), Color.SteelBlue1_1)}",
-			$"{_ui.StyledText(_configurationService.GetShowHiddenFiles() ? "Yes" : "No", Color.SteelBlue1_1)}",
 			$"{_ui.StyledText(_configurationService.GetTargetedFileTypes(), Color.SteelBlue1_1)}",
+			$"{_ui.StyledText(_configurationService.GetBaseDirectoryPath(), Color.SteelBlue1_1)}",
+			$"{_ui.StyledText(_configurationService.GetShowHiddenFiles() ? "Yes" : "No", Color.SteelBlue1_1)}",
 			""
 		};
 
@@ -118,13 +118,13 @@ public class Controller
 				ConcatenateFilesAndCopyToClipboard();
 				break;
 			case "2":
-				ConfigureBasePath();
-				break;
-			case "3":
 				ConfigureClipboardLimit();
 				break;
-			case "4":
+			case "3":
 				ConfigureFileTypes();
+				break;
+			case "4":
+				ConfigureBasePath();
 				break;
 			case "5":
 				SetBasePathToCurrentDirectory();
@@ -153,30 +153,31 @@ public class Controller
 	private void ShowHelp()
 	{
 		var helpText = new List<string>
-		{
-			"File Concatenator Application",
-			"",
-			"[bold underline]Purpose:[/]",
-			"This application concatenates text files of specified types from a selected directory and copies the combined content to your clipboard.",
-			"",
-			"[bold underline]Usage Instructions:[/]",
-			"[cd <directory>] - Changes the current directory to the specified path.",
-			"[1] Concatenate & Copy Clipboard - Concatenates targeted files in the current directory and copies the result to the clipboard.",
-			"[2] Set Base Path - Changes the base directory for file operations.",
-			"[3] Set Clipboard Limit - Sets the maximum number of characters that can be copied to the clipboard.",
-			"[4] Set File Types - Select the file types to concatenate (e.g., *.txt, *.cs, etc.).",
-			"[5] Show Hidden Files - Toggles the visibility of hidden files in the directory listing.",
-			"[h] Help - Displays this help information.",
-			"[q] Quit - Exits the application.",
-			"",
-			"[bold underline]Tips & Recommendations:[/]",
-			"- Use '[cd <directory>]' to navigate to the desired folder before running any operations.",
-			"- Set a reasonable clipboard limit to avoid issues with large text blocks.",
-			"- If no file types are selected, '*.html' will be used by default.",
-			"- Hidden files are not shown by default; use the '[5] Show Hidden Files' option to include them.",
-			"",
-			"[bold]Remember:[/] All settings are persistent and will be saved between sessions, ensuring a seamless experience each time you run the application."
-		};
+	{
+		"FILE CONCATENATOR",
+		"",
+		"Purpose:",
+		"Concatenate text files from a selected directory and copy the combined content to your clipboard.",
+		"",
+		"Commands:",
+		"[cd <directory>] - Change to the specified directory.",
+		"[1] Concatenate & Copy - Combine files and copy to clipboard.",
+		"[2] Set Clipboard Limit - Set max characters for clipboard.",
+		"[3] Set File Types - Choose which file types to concatenate.",
+		"[4] Set Base Path - Change base directory manually.",
+		"[5] Set Base Path to Current Directory - Use current directory as base.",
+		"[6] Show Hidden Files - Toggle visibility of hidden files.",
+		"[h] Help - Show this help message.",
+		"[q] Quit - Exit the application.",
+		"",
+		"Tips:",
+		"- Use 'cd' to navigate to the desired folder before operations.",
+		"- Set a reasonable clipboard limit to handle large text blocks.",
+		"- Default file types are '*.cs' if none are selected.",
+		"- Hidden files are not shown by default; toggle with [6].",
+		"",
+		"Note: Settings are persistent between sessions."
+	};
 
 		_ui.ShowMessageAndWait(string.Join("\n", helpText));
 	}
@@ -283,7 +284,7 @@ public class Controller
 			input = _ui.GetInput(prompt).ToLower();
 			if (!validOptions.Contains(input))
 			{
-				_ui.ShowMessage("Invalid command. Enter \"y\" or \"n\".");
+				_ui.ShowMessage("Invalid command. Enter \"y\" or \"n\".\n");
 			}
 		} while (!validOptions.Contains(input));
 		return input;
