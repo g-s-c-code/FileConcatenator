@@ -5,18 +5,16 @@ namespace FileConcatenator;
 
 public class SpectreUI
 {
-	private const string BoldFormat = "[bold {0}]{1}[/]";
-	private const string HeaderFormat = "[bold underline {0}]{1}[/]";
-	private Theme _currentTheme;
+	private Theme _theme;
 
 	public SpectreUI(Theme initialTheme)
 	{
-		_currentTheme = initialTheme;
+		_theme = initialTheme;
 	}
 
 	public void SetTheme(Theme newTheme)
 	{
-		_currentTheme = newTheme;
+		_theme = newTheme;
 	}
 
 	public void Clear()
@@ -41,25 +39,23 @@ public class SpectreUI
 	}
 	public string StyledText(string text, Color? color = null)
 	{
-		color ??= _currentTheme.TextColor;
-		return string.Format(BoldFormat, color, text);
+		return $"[bold {color ?? Color.White}]{text}[/]";
 	}
 
 	public string StyledHeader(string text, Color? color = null)
 	{
-		color ??= _currentTheme.HeaderColor;
-		return string.Format(HeaderFormat, color, text);
+		return $"[bold {color ?? Color.Grey78}]{text}[/]";
 	}
 
 	public IRenderable DisplayTree(string header, IEnumerable<string> items)
 	{
 		var tree = new Tree(header)
 		{
-			Style = new Style(foreground: _currentTheme.AccentColor)
+			Style = new Style(foreground: _theme.TreeBranchColor)
 		};
 		foreach (var item in items)
 		{
-			tree.AddNode(StyledText(Markup.Escape(item), _currentTheme.TextColor));
+			tree.AddNode(StyledText(Markup.Escape(item), _theme.TextColor));
 		}
 		return tree;
 	}
@@ -67,18 +63,18 @@ public class SpectreUI
 	public void MainLayout(string currentDirectory, string commands, string settingsHeaders, string currentSettings, IEnumerable<string> directoriesTree, IEnumerable<string> filesTree)
 	{
 		var rightTableColumn = new Table();
-		rightTableColumn.AddColumn(new TableColumn(StyledHeader("Current Directory:").ToUpper() + " " + StyledText(currentDirectory.ToUpper(), _currentTheme.AccentColor)));
+		rightTableColumn.AddColumn(new TableColumn(StyledHeader("Current Directory:").ToUpper() + " " + StyledText(currentDirectory.ToUpper(), _theme.AccentColor)));
 		rightTableColumn.AddColumn(new TableColumn(""));
 		rightTableColumn.AddRow(DisplayTree(StyledHeader("\nFolders:").ToUpper(), directoriesTree), DisplayTree(StyledHeader("\nFiles:").ToUpper(), filesTree));
 		rightTableColumn.Border = TableBorder.None;
 
 		var upperLeftColumn = new Table();
-		upperLeftColumn.AddColumn(new TableColumn(StyledText(settingsHeaders, _currentTheme.TextColor)));
-		upperLeftColumn.AddColumn(new TableColumn(StyledText(currentSettings, _currentTheme.TextColor)));
+		upperLeftColumn.AddColumn(new TableColumn(StyledText(settingsHeaders, _theme.TextColor)));
+		upperLeftColumn.AddColumn(new TableColumn(StyledText(currentSettings, _theme.AccentColor)));
 		upperLeftColumn.Border = TableBorder.None;
 
 		var lowerLeftColumn = new Table();
-		lowerLeftColumn.AddColumn(new TableColumn(StyledText(commands, _currentTheme.TextColor)));
+		lowerLeftColumn.AddColumn(new TableColumn(StyledText(commands, _theme.TextColor)));
 		lowerLeftColumn.Border = TableBorder.None;
 
 		var leftTableColumn = new Table();
@@ -93,7 +89,7 @@ public class SpectreUI
 		mainLayout.AddColumn(new TableColumn(leftTableColumn));
 		mainLayout.AddColumn(new TableColumn(rightTableColumn));
 		mainLayout.Border = TableBorder.Square;
-		mainLayout.BorderColor(_currentTheme.PrimaryColor);
+		mainLayout.BorderColor(_theme.BorderColor);
 
 		AnsiConsole.Write(mainLayout);
 	}

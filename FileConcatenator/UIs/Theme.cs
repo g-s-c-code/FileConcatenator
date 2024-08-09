@@ -4,18 +4,18 @@ namespace FileConcatenator;
 
 public class Theme
 {
-	public Color PrimaryColor { get; set; }
-	public Color SecondaryColor { get; set; }
-	public Color AccentColor { get; set; }
 	public Color TextColor { get; set; }
 	public Color HeaderColor { get; set; }
+	public Color TreeBranchColor { get; set; }
+	public Color AccentColor { get; set; }
+	public Color BorderColor { get; set; }
 
-	public Theme(Color primary, Color secondary, Color accent, Color text, Color header)
+	public Theme(Color textColor, Color headerColor, Color treeBranchColor, Color accentColor, Color borderColor)
 	{
-		PrimaryColor = primary;
-		SecondaryColor = secondary;
-		AccentColor = accent;
-		TextColor = text;
-		HeaderColor = header;
+		TextColor = textColor;
+		HeaderColor = headerColor;
+		TreeBranchColor = treeBranchColor;
+		AccentColor = accentColor;
+		BorderColor = borderColor;
 	}
 }

@@ -31,7 +31,7 @@ public class Controller
 			{
 				_ui.Clear();
 				DisplayUserInterface();
-				var userCommand = AnsiConsole.Ask<string>(_ui.StyledText("Enter command:", Color.White));
+				var userCommand = AnsiConsole.Ask<string>(_ui.StyledText("Enter command:"));
 				ProcessCommand(userCommand);
 			}
 			catch (Exception exception)
@@ -97,10 +97,10 @@ public class Controller
 	{
 		var settings = new List<string>
 		{
-			$"{_ui.StyledText(_configurationManager.GetClipboardCharacterLimit().ToString(), Color.SteelBlue1_1)}",
-			$"{_ui.StyledText(_configurationManager.GetTargetedFileTypes(), Color.SteelBlue1_1)}",
-			$"{_ui.StyledText(_configurationManager.GetBaseDirectoryPath(), Color.SteelBlue1_1)}",
-			$"{_ui.StyledText(_configurationManager.GetShowHiddenFiles() ? "Yes" : "No", Color.SteelBlue1_1)}",
+			$"{_ui.StyledText(_configurationManager.GetClipboardCharacterLimit().ToString())}",
+			$"{_ui.StyledText(_configurationManager.GetTargetedFileTypes())}",
+			$"{_ui.StyledText(_configurationManager.GetBaseDirectoryPath())}",
+			$"{_ui.StyledText(_configurationManager.GetShowHiddenFiles() ? "Yes" : "No")}",
 			""
 		};
 
@@ -297,7 +297,7 @@ public class Controller
 	{
 		var themes = new Dictionary<string, Theme>
 {
-	{"Default", new Theme(Color.White, Color.Grey, Color.SteelBlue1_1, Color.White, Color.Grey78)},
+	{"Default", new Theme(Color.White, Color.Grey78, Color.RosyBrown, Color.SteelBlue1_1, Color.Grey78)},
 	{"Dark", new Theme(Color.DarkSlateGray2, Color.SlateBlue1, Color.DodgerBlue1, Color.White, Color.SlateBlue1)},
 	{"Light", new Theme(Color.White, Color.Grey, Color.RoyalBlue1, Color.White, Color.DarkSlateGray1)}
 };

@@ -7,9 +7,9 @@ internal class Program
 {
 	private static readonly Theme DefaultTheme = new Theme(
 			Color.White,
-			Color.Grey,
+			Color.Grey78,
+			Color.RosyBrown,
 			Color.SteelBlue1_1,
-			Color.White,
 			Color.Grey78
 		);
 
