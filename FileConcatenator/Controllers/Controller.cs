@@ -8,6 +8,11 @@ public class Controller
 	private readonly ConfigurationManager _configurationService;
 	private readonly FileConcatenationService _fileConcatenationService;
 	private string _currentDirectory;
+	private static readonly string[] choices = new[]
+				{
+				"*.txt", "*.cs", "*.js", "*.html", "*.xml", "*.json", "*.css", "*.md",
+				"*.py", "*.java", "*.cpp", "*.c", "*.h", "*.ts", "*.yaml", "*.yml"
+				};
 
 	public Controller(SpectreUI ui, ConfigurationManager configurationService, FileConcatenationService fileConcatenationService)
 	{
@@ -238,11 +243,7 @@ public class Controller
 				.PageSize(10)
 				.MoreChoicesText("[white]Move up and down to reveal more file types[/]")
 				.InstructionsText($"[white]Press [steelblue1_1]{space}[/] to toggle a file type, [steelblue1_1]{enter}[/] to accept[/]")
-				.AddChoices(new[]
-				{
-				"*.txt", "*.cs", "*.js", "*.html", "*.xml", "*.json", "*.css", "*.md",
-				"*.py", "*.java", "*.cpp", "*.c", "*.h", "*.ts", "*.yaml", "*.yml"
-				}));
+				.AddChoices(choices));
 
 		if (fileTypes.Count == 0)
 		{
