@@ -9,7 +9,7 @@ public class Controller
 	private readonly FileConcatenationService _fileConcatenationService;
 	private string _currentDirectory;
 	private static readonly string[] _fileTypeChoices =
-		[
+	[
 		"*.txt", "*.cs", "*.js", "*.html", "*.xml", "*.json", "*.css", "*.md",
 		"*.py", "*.java", "*.cpp", "*.c", "*.h", "*.ts", "*.yaml", "*.yml"
 	];
@@ -42,23 +42,17 @@ public class Controller
 	private void RenderUI()
 	{
 		_ui.Clear();
-
-		var directoriesTree = _fileConcatenationService.GetDirectories(_currentDirectory);
-		var filesTree = _fileConcatenationService.GetFiles(_currentDirectory);
-
 		_ui.MainLayout(
 			_currentDirectory,
 			GetCommands(),
 			GetSettingsHeaders(),
 			GetCurrentSettings(),
-			directoriesTree,
-			filesTree
+			_fileConcatenationService.GetDirectories(_currentDirectory),
+			_fileConcatenationService.GetFiles(_currentDirectory)
 		);
 	}
 
-	private string GetCommands() => GetMainMenu();
-
-	private string GetMainMenu()
+	private string GetCommands()
 	{
 		var commands = new List<string>
 		{
@@ -87,7 +81,6 @@ public class Controller
 			"Targeted File Types:",
 			"Base Path:",
 			"Show Hidden Files:",
-			""
 		};
 
 		return string.Join("\n", settings);
@@ -156,31 +149,31 @@ public class Controller
 	private void ShowHelp()
 	{
 		var helpText = new List<string>
-{
-	"FILE CONCATENATOR",
-	"",
-	"Purpose:",
-	"Concatenate text files from a selected directory and copy the combined content to your clipboard.",
-	"",
-	"Commands:",
-	"[cd <directory>] - Change to the specified directory.",
-	"[1] Concatenate & Copy - Combine files and copy to clipboard.",
-	"[2] Set Clipboard Limit - Set max characters for clipboard.",
-	"[3] Set File Types - Choose which file types to concatenate.",
-	"[4] Set Base Path - Change base directory manually.",
-	"[5] Set Base Path to Current Directory - Use current directory as base.",
-	"[6] Show Hidden Files - Toggle visibility of hidden files.",
-	"[h] Help - Show this help message.",
-	"[q] Quit - Exit the application.",
-	"",
-	"Tips:",
-	"- Use 'cd' to navigate to the desired folder before operations.",
-	"- Set a reasonable clipboard limit to handle large text blocks.",
-	"- Default file types are '*.cs' if none are selected.",
-	"- Hidden files are not shown by default; toggle with [6].",
-	"",
-	"Note: Settings are persistent between sessions."
-};
+		{
+			"FILE CONCATENATOR",
+			"",
+			"Purpose:",
+			"Concatenate text files from a selected directory and copy the combined content to your clipboard.",
+			"",
+			"Commands:",
+			"[cd <directory>] - Change to the specified directory.",
+			"[1] Concatenate & Copy - Combine files and copy to clipboard.",
+			"[2] Set Clipboard Limit - Set max characters for clipboard.",
+			"[3] Set File Types - Choose which file types to concatenate.",
+			"[4] Set Base Path - Change base directory manually.",
+			"[5] Set Base Path to Current Directory - Use current directory as base.",
+			"[6] Show Hidden Files - Toggle visibility of hidden files.",
+			"[h] Help - Show this help message.",
+			"[q] Quit - Exit the application.",
+			"",
+			"Tips:",
+			"- Use 'cd' to navigate to the desired folder before operations.",
+			"- Set a reasonable clipboard limit to handle large text blocks.",
+			"- Default file types are '*.cs' if none are selected.",
+			"- Hidden files are not shown by default; toggle with [6].",
+			"",
+			"Note: Settings are persistent between sessions."
+		};
 
 		_ui.ShowMessageAndWait(string.Join("\n", helpText));
 	}
