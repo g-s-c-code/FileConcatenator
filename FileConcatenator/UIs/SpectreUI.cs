@@ -5,6 +5,20 @@ namespace FileConcatenator;
 
 public class SpectreUI
 {
+	private const string BoldFormat = "[bold {0}]{1}[/]";
+	private const string HeaderFormat = "[bold underline {0}]{1}[/]";
+	private Theme _currentTheme;
+
+	public SpectreUI(Theme initialTheme)
+	{
+		_currentTheme = initialTheme;
+	}
+
+	public void SetTheme(Theme newTheme)
+	{
+		_currentTheme = newTheme;
+	}
+
 	public void Clear()
 	{
 		AnsiConsole.Clear();
@@ -25,59 +39,61 @@ public class SpectreUI
 	{
 		return AnsiConsole.Ask<string>(input);
 	}
-
 	public string StyledText(string text, Color? color = null)
 	{
-		color ??= Color.White;
-		return $"[bold {color}]{text}[/]";
+		color ??= _currentTheme.TextColor;
+		return string.Format(BoldFormat, color, text);
 	}
 
 	public string StyledHeader(string text, Color? color = null)
 	{
-		color ??= Color.Grey78;
-		return $"[bold underline {color}]{text}[/]";
+		color ??= _currentTheme.HeaderColor;
+		return string.Format(HeaderFormat, color, text);
 	}
 
 	public IRenderable DisplayTree(string header, IEnumerable<string> items)
 	{
 		var tree = new Tree(header)
 		{
-			Style = new Style(foreground: Color.RosyBrown)
+			Style = new Style(foreground: _currentTheme.AccentColor)
 		};
-
 		foreach (var item in items)
 		{
-			tree.AddNode($"[bold white]{Markup.Escape(item)}[/]");
+			tree.AddNode(StyledText(Markup.Escape(item), _currentTheme.TextColor));
 		}
-
 		return tree;
 	}
 
 	public void MainLayout(string currentDirectory, string commands, string settingsHeaders, string currentSettings, IEnumerable<string> directoriesTree, IEnumerable<string> filesTree)
 	{
-		var currentDirectoryTable = new Table();
-		currentDirectoryTable.AddColumn(new TableColumn(StyledHeader("Current Directory:").ToUpper() + " " + StyledText(currentDirectory.ToUpper(), Color.SteelBlue1_1)));
-		currentDirectoryTable.AddColumn(new TableColumn(""));
-		currentDirectoryTable.AddRow(DisplayTree(StyledHeader("\nFolders:").ToUpper(), directoriesTree), DisplayTree(StyledHeader("\nFiles:").ToUpper(), filesTree));
-		currentDirectoryTable.Border = TableBorder.None;
+		var rightTableColumn = new Table();
+		rightTableColumn.AddColumn(new TableColumn(StyledHeader("Current Directory:").ToUpper() + " " + StyledText(currentDirectory.ToUpper(), _currentTheme.AccentColor)));
+		rightTableColumn.AddColumn(new TableColumn(""));
+		rightTableColumn.AddRow(DisplayTree(StyledHeader("\nFolders:").ToUpper(), directoriesTree), DisplayTree(StyledHeader("\nFiles:").ToUpper(), filesTree));
+		rightTableColumn.Border = TableBorder.None;
 
-		var settingsTable = new Table();
-		settingsTable.AddColumn(new TableColumn(StyledText(settingsHeaders, Color.White)));
-		settingsTable.AddColumn(new TableColumn(StyledText(currentSettings, Color.White)));
-		settingsTable.Border = TableBorder.None;
+		var upperLeftColumn = new Table();
+		upperLeftColumn.AddColumn(new TableColumn(StyledText(settingsHeaders, _currentTheme.TextColor)));
+		upperLeftColumn.AddColumn(new TableColumn(StyledText(currentSettings, _currentTheme.TextColor)));
+		upperLeftColumn.Border = TableBorder.None;
 
-		var commandsTable = new Table();
-		commandsTable.AddColumn(new TableColumn(StyledHeader("Current Settings:").ToUpper()));
-		commandsTable.AddRow(settingsTable);
-		commandsTable.AddRow(StyledText(commands, Color.White));
-		commandsTable.Border = TableBorder.None;
-		commandsTable.Width(50);
+		var lowerLeftColumn = new Table();
+		lowerLeftColumn.AddColumn(new TableColumn(StyledText(commands, _currentTheme.TextColor)));
+		lowerLeftColumn.Border = TableBorder.None;
+
+		var leftTableColumn = new Table();
+		leftTableColumn.AddColumn(new TableColumn(StyledHeader("Current Settings:").ToUpper()));
+		leftTableColumn.AddRow(upperLeftColumn);
+		leftTableColumn.AddRow(StyledHeader("Commands:").ToUpper());
+		leftTableColumn.AddRow(lowerLeftColumn);
+		leftTableColumn.Border = TableBorder.None;
+		leftTableColumn.Width(50);
 
 		var mainLayout = new Table();
-		mainLayout.AddColumn(new TableColumn(commandsTable));
-		mainLayout.AddColumn(new TableColumn(currentDirectoryTable));
-		mainLayout.Border = TableBorder.Minimal;
-		mainLayout.BorderColor(Color.White);
+		mainLayout.AddColumn(new TableColumn(leftTableColumn));
+		mainLayout.AddColumn(new TableColumn(rightTableColumn));
+		mainLayout.Border = TableBorder.Square;
+		mainLayout.BorderColor(_currentTheme.PrimaryColor);
 
 		AnsiConsole.Write(mainLayout);
 	}
