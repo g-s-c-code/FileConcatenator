@@ -5,9 +5,9 @@ namespace FileConcatenator;
 
 public class FileConcatenationService
 {
-	private readonly ConfigurationManager _configurationManager;
+	private readonly ConfigurationService _configurationManager;
 
-	public FileConcatenationService(ConfigurationManager configurationManager)
+	public FileConcatenationService(ConfigurationService configurationManager)
 	{
 		_configurationManager = configurationManager;
 	}

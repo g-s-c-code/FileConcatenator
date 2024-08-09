@@ -5,7 +5,7 @@ namespace FileConcatenator;
 public class Controller
 {
 	private readonly SpectreUI _ui;
-	private readonly ConfigurationManager _configurationManager;
+	private readonly ConfigurationService _configurationService;
 	private readonly FileConcatenationService _fileConcatenationService;
 	private string _currentDirectory;
 	private static readonly string[] strings = new[]
@@ -15,12 +15,12 @@ public class Controller
 	};
 	private static readonly string[] _fileTypeChoices = strings;
 
-	public Controller(SpectreUI userInterface, ConfigurationManager configurationManager, FileConcatenationService fileConcatenationService)
+	public Controller(SpectreUI userInterface, ConfigurationService configurationService, FileConcatenationService fileConcatenationService)
 	{
 		_ui = userInterface;
-		_configurationManager = configurationManager;
+		_configurationService = configurationService;
 		_fileConcatenationService = fileConcatenationService;
-		_currentDirectory = _configurationManager.GetBaseDirectoryPath();
+		_currentDirectory = _configurationService.GetBaseDirectoryPath();
 	}
 
 	public void Run()
@@ -97,10 +97,10 @@ public class Controller
 	{
 		var settings = new List<string>
 		{
-			_configurationManager.GetClipboardCharacterLimit().ToString(),
-			_configurationManager.GetTargetedFileTypes(),
-			_configurationManager.GetBaseDirectoryPath(),
-			_configurationManager.GetShowHiddenFiles() ? "Yes" : "No",
+			_configurationService.GetClipboardCharacterLimit().ToString(),
+			_configurationService.GetTargetedFileTypes(),
+			_configurationService.GetBaseDirectoryPath(),
+			_configurationService.GetShowHiddenFiles() ? "Yes" : "No",
 			""
 		};
 
@@ -149,7 +149,7 @@ public class Controller
 
 	private void SetBasePathToCurrentDirectory()
 	{
-		_configurationManager.SetBaseDirectoryPath(_currentDirectory);
+		_configurationService.SetBaseDirectoryPath(_currentDirectory);
 		_ui.ShowMessageAndWait($"Base path updated to the current directory: {_currentDirectory}");
 	}
 
@@ -216,7 +216,7 @@ public class Controller
 	private void ConfigureShowHiddenFiles()
 	{
 		var showHiddenFiles = GetValidInput("Show hidden files? (y/n): ", new[] { "y", "n" });
-		_configurationManager.SetShowHiddenFiles(showHiddenFiles == "y");
+		_configurationService.SetShowHiddenFiles(showHiddenFiles == "y");
 		_ui.ShowMessageAndWait("Show hidden files setting updated.");
 	}
 
@@ -225,7 +225,7 @@ public class Controller
 		var newBasePath = _ui.GetInput("Enter new base path: ");
 		if (DirectoryExists(newBasePath))
 		{
-			_configurationManager.SetBaseDirectoryPath(newBasePath);
+			_configurationService.SetBaseDirectoryPath(newBasePath);
 			_currentDirectory = newBasePath;
 			_ui.ShowMessageAndWait("Base path updated.");
 		}
@@ -255,7 +255,7 @@ public class Controller
 			_ui.ShowMessageAndWait("No file types were selected, so '*.cs' was set as the default.\n");
 		}
 
-		_configurationManager.SetTargetedFileTypes(string.Join(", ", fileTypes));
+		_configurationService.SetTargetedFileTypes(string.Join(", ", fileTypes));
 		_ui.ShowMessageAndWait("Targeted file types updated.");
 	}
 
@@ -264,10 +264,10 @@ public class Controller
 		const int warningLimit = 10_000_000;
 		_ui.ShowMessage($"Warning: Setting a clipboard limit above {warningLimit} characters might cause issues on some systems.\n");
 
-		var input = _ui.GetInput($"Enter new clipboard character limit (current: {_configurationManager.GetClipboardCharacterLimit()}): ");
+		var input = _ui.GetInput($"Enter new clipboard character limit (current: {_configurationService.GetClipboardCharacterLimit()}): ");
 		if (int.TryParse(input, out var newLimit) && newLimit > 0)
 		{
-			_configurationManager.SetClipboardCharacterLimit(newLimit);
+			_configurationService.SetClipboardCharacterLimit(newLimit);
 			var warningMessage = newLimit > warningLimit
 				? $"Warning: Setting a clipboard limit above {warningLimit} characters might cause issues on some systems."
 				: $"Clipboard character limit updated to {newLimit}.";
@@ -308,7 +308,7 @@ public class Controller
 				.AddChoices(themes.Keys));
 
 		_ui.SetTheme(themes[choice]);
-		_configurationManager.SetSelectedTheme(choice);
+		_configurationService.SetSelectedTheme(choice);
 		_ui.ShowMessageAndWait("Theme updated.");
 	}
 

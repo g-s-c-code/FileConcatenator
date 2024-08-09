@@ -23,11 +23,11 @@ internal class Program
 
 	private static void ConfigureServices(IServiceCollection services)
 	{
-		services.AddSingleton<ConfigurationManager>();
+		services.AddSingleton<ConfigurationService>();
 		services.AddSingleton(provider =>
 		{
-			var configManager = provider.GetRequiredService<ConfigurationManager>();
-			var themeName = configManager.GetSelectedTheme();
+			var configurationService = provider.GetRequiredService<ConfigurationService>();
+			var themeName = configurationService.GetSelectedTheme();
 			return AvailableThemes.TryGetValue(themeName, out var theme) ? theme : AvailableThemes["Default"];
 		});
 		services.AddSingleton<SpectreUI>();

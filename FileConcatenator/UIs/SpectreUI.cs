@@ -46,7 +46,7 @@ public class SpectreUI
 
 	public string Header(string text, Color? color = null)
 	{
-		return $"[bold underline {color ?? Color.Grey78}]{text}[/]";
+		return $"[bold underline {color ?? Color.Grey78}]{text}[/]".ToUpper();
 	}
 
 	public IRenderable DisplayTree(string header, IEnumerable<string> items)
@@ -65,9 +65,9 @@ public class SpectreUI
 	public void MainLayout(string currentDirectory, string commands, string settingsHeaders, string currentSettings, IEnumerable<string> directoriesTree, IEnumerable<string> filesTree)
 	{
 		var rightTableColumn = new Table();
-		rightTableColumn.AddColumn(new TableColumn(Header("Current Directory:".ToUpper(), _theme.HeaderColor) + " " + Text(currentDirectory.ToUpper(), _theme.AccentColor)));
+		rightTableColumn.AddColumn(new TableColumn(Header("Current Directory:", _theme.HeaderColor) + " " + Text(currentDirectory, _theme.AccentColor)));
 		rightTableColumn.AddColumn(new TableColumn(""));
-		rightTableColumn.AddRow(DisplayTree(Header("\nFolders:".ToUpper(), _theme.HeaderColor), directoriesTree), DisplayTree(Header("\nFiles:".ToUpper(), _theme.HeaderColor), filesTree));
+		rightTableColumn.AddRow(DisplayTree(Header("\nFolders:", _theme.HeaderColor), directoriesTree), DisplayTree(Header("\nFiles:", _theme.HeaderColor), filesTree));
 		rightTableColumn.Border = TableBorder.None;
 
 		var upperLeftColumn = new Table();
@@ -80,9 +80,9 @@ public class SpectreUI
 		lowerLeftColumn.Border = TableBorder.None;
 
 		var leftTableColumn = new Table();
-		leftTableColumn.AddColumn(new TableColumn(Header("Current Settings:".ToUpper(), _theme.HeaderColor)));
+		leftTableColumn.AddColumn(new TableColumn(Header("Current Settings:", _theme.HeaderColor)));
 		leftTableColumn.AddRow(upperLeftColumn);
-		leftTableColumn.AddRow(Header("Commands:".ToUpper(), _theme.HeaderColor));
+		leftTableColumn.AddRow(Header("Commands:", _theme.HeaderColor));
 		leftTableColumn.AddRow(lowerLeftColumn);
 		leftTableColumn.Border = TableBorder.None;
 		leftTableColumn.Width(50);
@@ -90,7 +90,7 @@ public class SpectreUI
 		var mainLayout = new Table();
 		mainLayout.AddColumn(new TableColumn(leftTableColumn));
 		mainLayout.AddColumn(new TableColumn(rightTableColumn));
-		mainLayout.Border = TableBorder.Square;
+		mainLayout.Border = TableBorder.DoubleEdge;
 		mainLayout.BorderColor(_theme.BorderColor);
 
 		AnsiConsole.Write(mainLayout);

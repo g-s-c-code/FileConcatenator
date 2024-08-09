@@ -2,18 +2,18 @@
 
 namespace FileConcatenator;
 
-public class ConfigurationManager
+public class ConfigurationService
 {
 	private readonly string _settingsFilePath;
 	private Configuration _configuration;
 
-	public ConfigurationManager()
+	public ConfigurationService()
 	{
 		_settingsFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "settings.json");
-		_configuration = LoadOrCreateConfig();
+		_configuration = LoadOrCreateConfiguration();
 	}
 
-	public Configuration LoadOrCreateConfig()
+	public Configuration LoadOrCreateConfiguration()
 	{
 		if (File.Exists(_settingsFilePath))
 		{
