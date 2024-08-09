@@ -1,10 +1,11 @@
-﻿using FileConcatenator;
-using Spectre.Console;
+﻿using Spectre.Console;
 using Microsoft.Extensions.DependencyInjection;
+
+namespace FileConcatenator;
 
 internal class Program
 {
-	private static readonly Dictionary<string, Theme> AvailableThemes = new Dictionary<string, Theme>
+	public static readonly Dictionary<string, Theme> AvailableThemes = new Dictionary<string, Theme>
 	{
 		{"Default", new Theme(Color.White, Color.Grey78, Color.RosyBrown, Color.SteelBlue1_1, Color.Grey78)},
 		{"Pastel", new Theme(Color.LightCyan3, Color.MistyRose1, Color.LightSteelBlue1, Color.PaleGreen3_1, Color.PaleVioletRed1)},

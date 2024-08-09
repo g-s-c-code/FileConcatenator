@@ -8,16 +8,15 @@ public class Controller
 	private readonly ConfigurationService _configurationService;
 	private readonly FileConcatenationService _fileConcatenationService;
 	private string _currentDirectory;
-	private static readonly string[] strings = new[]
-		{
+	private static readonly string[] _fileTypeChoices =
+		[
 		"*.txt", "*.cs", "*.js", "*.html", "*.xml", "*.json", "*.css", "*.md",
 		"*.py", "*.java", "*.cpp", "*.c", "*.h", "*.ts", "*.yaml", "*.yml"
-	};
-	private static readonly string[] _fileTypeChoices = strings;
+	];
 
-	public Controller(SpectreUI userInterface, ConfigurationService configurationService, FileConcatenationService fileConcatenationService)
+	public Controller(SpectreUI ui, ConfigurationService configurationService, FileConcatenationService fileConcatenationService)
 	{
-		_ui = userInterface;
+		_ui = ui;
 		_configurationService = configurationService;
 		_fileConcatenationService = fileConcatenationService;
 		_currentDirectory = _configurationService.GetBaseDirectoryPath();
@@ -29,8 +28,7 @@ public class Controller
 		{
 			try
 			{
-				_ui.Clear();
-				DisplayUserInterface();
+				RenderUI();
 				var userCommand = _ui.GetInput("Enter command:");
 				ProcessCommand(userCommand);
 			}
@@ -41,8 +39,10 @@ public class Controller
 		}
 	}
 
-	private void DisplayUserInterface()
+	private void RenderUI()
 	{
+		_ui.Clear();
+
 		var directoriesTree = _fileConcatenationService.GetDirectories(_currentDirectory);
 		var filesTree = _fileConcatenationService.GetFiles(_currentDirectory);
 
@@ -295,23 +295,15 @@ public class Controller
 
 	private void ChangeTheme()
 	{
-		var themes = new Dictionary<string, Theme>
-	{
-		{"Default", new Theme(Color.White, Color.Grey78, Color.RosyBrown, Color.SteelBlue1_1, Color.Grey78)},
-		{"Pastel", new Theme(Color.LightCyan3, Color.MistyRose1, Color.LightSteelBlue1, Color.PaleGreen3_1, Color.PaleVioletRed1)},
-		{"Minimalistic", new Theme(Color.White, Color.White, Color.White, Color.White, Color.Black)}
-	};
-
 		var choice = AnsiConsole.Prompt(
 			new SelectionPrompt<string>()
 				.Title("Select a theme:")
-				.AddChoices(themes.Keys));
+				.AddChoices(Program.AvailableThemes.Keys));
 
-		_ui.SetTheme(themes[choice]);
+		_ui.SetTheme(Program.AvailableThemes[choice]);
 		_configurationService.SetSelectedTheme(choice);
 		_ui.ShowMessageAndWait("Theme updated.");
 	}
-
 
 	private bool DirectoryExists(string path) => Directory.Exists(path);
 }
