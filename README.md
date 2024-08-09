@@ -21,7 +21,7 @@
 To install and run **FileConcatenator**, ensure you have the .NET 8.0 SDK installed on your system. You can clone the repository and build the project:
 
 ```bash
-git clone https://github.com/yourusername/FileConcatenator.git
+git clone https://github.com/g-s-c-code/FileConcatenator.git
 cd FileConcatenator
 dotnet build
 dotnet run
@@ -75,6 +75,6 @@ You can manually edit the `settings.json` file if needed, or adjust settings thr
 - **File Access**: Ensure you have the necessary permissions to access all files and directories within the base path. Unauthorized access will result in skipped files.
 - **Directory Structure**: Use the `cd` command to navigate to the correct directory before concatenating files, especially if working in nested directory structures.
 
-If you encounter any issues or have suggestions for improvements, feel free to contribute to the project or open an issue on the [GitHub repository](https://github.com/yourusername/FileConcatenator).
+If you encounter any issues or have suggestions for improvements, feel free to contribute to the project or open an issue on the [GitHub repository](https://github.com/g-s-c-code/FileConcatenator).
 
 // GSC
