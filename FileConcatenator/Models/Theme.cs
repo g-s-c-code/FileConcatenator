@@ -10,12 +10,15 @@ public class Theme
 	public Color AccentColor { get; set; }
 	public Color BorderColor { get; set; }
 
-	public Theme(Color textColor, Color headerColor, Color treeBranchColor, Color accentColor, Color borderColor)
+	public TableBorder BorderType { get; set; }
+
+	public Theme(Color textColor, Color headerColor, Color treeBranchColor, Color accentColor, Color borderColor, TableBorder borderType)
 	{
 		TextColor = textColor;
 		HeaderColor = headerColor;
 		TreeBranchColor = treeBranchColor;
 		AccentColor = accentColor;
 		BorderColor = borderColor;
+		BorderType = borderType;
 	}
 }

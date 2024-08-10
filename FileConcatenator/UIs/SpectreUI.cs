@@ -90,7 +90,7 @@ public class SpectreUI
 		var mainLayout = new Table();
 		mainLayout.AddColumn(new TableColumn(leftTableColumn));
 		mainLayout.AddColumn(new TableColumn(rightTableColumn));
-		mainLayout.Border = TableBorder.DoubleEdge;
+		mainLayout.Border = _theme.BorderType;
 		mainLayout.BorderColor(_theme.BorderColor);
 
 		AnsiConsole.Write(mainLayout);

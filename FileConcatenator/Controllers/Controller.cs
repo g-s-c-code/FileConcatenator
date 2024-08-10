@@ -10,8 +10,12 @@ public class Controller
 	private string _currentDirectory;
 	private static readonly string[] _fileTypeChoices =
 	[
-		"*.txt", "*.cs", "*.js", "*.html", "*.xml", "*.json", "*.css", "*.md",
-		"*.py", "*.java", "*.cpp", "*.c", "*.h", "*.ts", "*.yaml", "*.yml"
+		"*.aspx", "*.bat", "*.c", "*.cc", "*.cfg", "*.cfm", "*.cgi", "*.class", "*.cmd",
+		"*.com", "*.cpp", "*.cs", "*.css", "*.csv", "*.cxx", "*.dat", "*.db", "*.dbf", "*.env",
+		"*.htm", "*.html", "*.ini", "*.java", "*.js", "*.json", "*.jsp", "*.jsx", "*.log",
+		"*.m", "*.md", "*.php", "*.pl", "*.py", "*.rb", "*.sass", "*.scala", "*.scss",
+		"*.sh", "*.sln", "*.sql", "*.swift", "*.tex", "*.ts", "*.vb", "*.vbs", "*.vcxproj",
+		"*.xml", "*.yaml", "*.yml"
 	];
 
 	public Controller(SpectreUI ui, ConfigurationService configurationService, FileConcatenationService fileConcatenationService)
@@ -291,9 +295,9 @@ public class Controller
 		var choice = AnsiConsole.Prompt(
 			new SelectionPrompt<string>()
 				.Title("Select a theme:")
-				.AddChoices(Program.AvailableThemes.Keys));
+				.AddChoices(Program.Themes.Keys));
 
-		_ui.SetTheme(Program.AvailableThemes[choice]);
+		_ui.SetTheme(Program.Themes[choice]);
 		_configurationService.SetSelectedTheme(choice);
 		_ui.ShowMessageAndWait("Theme updated.");
 	}
