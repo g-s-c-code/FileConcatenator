@@ -130,7 +130,7 @@ public class Controller
 				ConfigureShowHiddenFiles();
 				break;
 			case "7":
-				ChangeTheme();
+				SetTheme();
 				break;
 			case "h":
 				ShowHelp();
@@ -290,7 +290,7 @@ public class Controller
 		return input;
 	}
 
-	private void ChangeTheme()
+	private void SetTheme()
 	{
 		var choice = AnsiConsole.Prompt(
 			new SelectionPrompt<string>()
