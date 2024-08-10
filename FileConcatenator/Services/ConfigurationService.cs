@@ -48,7 +48,7 @@ public class ConfigurationService
 
 	public string GetSelectedTheme()
 	{
-		return _configuration.Theme ?? "Default";
+		return _configuration.Theme ?? Constants.Themes.Default;
 	}
 
 	public void SetSelectedTheme(string theme)

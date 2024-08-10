@@ -8,15 +8,7 @@ public class Controller
 	private readonly ConfigurationService _configurationService;
 	private readonly FileConcatenationService _fileConcatenationService;
 	private string _currentDirectory;
-	private static readonly string[] _fileTypeChoices =
-	[
-		"*.aspx", "*.bat", "*.c", "*.cc", "*.cfg", "*.cfm", "*.cgi", "*.class", "*.cmd",
-		"*.com", "*.cpp", "*.cs", "*.css", "*.csv", "*.cxx", "*.dat", "*.db", "*.dbf", "*.env",
-		"*.htm", "*.html", "*.ini", "*.java", "*.js", "*.json", "*.jsp", "*.jsx", "*.log",
-		"*.m", "*.md", "*.php", "*.pl", "*.py", "*.rb", "*.sass", "*.scala", "*.scss",
-		"*.sh", "*.sln", "*.sql", "*.swift", "*.tex", "*.ts", "*.vb", "*.vbs", "*.vcxproj",
-		"*.xml", "*.yaml", "*.yml"
-	];
+	private static readonly string[] _fileTypeChoices = Constants.FileExtensions.DefaultFileTypes;
 
 	public Controller(SpectreUI ui, ConfigurationService configurationService, FileConcatenationService fileConcatenationService)
 	{
@@ -40,6 +32,46 @@ public class Controller
 			{
 				_ui.ShowMessageAndWait($"Unexpected error: {exception.Message}");
 			}
+		}
+	}
+
+	private void ProcessCommand(string command)
+	{
+		switch (command.ToLower())
+		{
+			case var changeDirectoryCommand when changeDirectoryCommand.StartsWith(Constants.Commands.ChangeDirectoryPrefix):
+				ChangeDirectory(changeDirectoryCommand);
+				break;
+			case Constants.Commands.ConcatenateAndCopy:
+				ConcatenateFilesAndCopyToClipboard();
+				break;
+			case Constants.Commands.SetClipboardLimit:
+				ConfigureClipboardLimit();
+				break;
+			case Constants.Commands.SetFileTypes:
+				ConfigureFileTypes();
+				break;
+			case Constants.Commands.SetBasePathManual:
+				ConfigureBasePath();
+				break;
+			case Constants.Commands.SetBasePathCurrent:
+				SetBasePathToCurrentDirectory();
+				break;
+			case Constants.Commands.ShowHiddenFiles:
+				ConfigureShowHiddenFiles();
+				break;
+			case Constants.Commands.ChangeTheme:
+				ChangeTheme();
+				break;
+			case Constants.Commands.Help:
+				ShowHelp();
+				break;
+			case Constants.Commands.Quit:
+				Environment.Exit(0);
+				break;
+			default:
+				_ui.ShowMessageAndWait("Error: Invalid command.");
+				break;
 		}
 	}
 
@@ -102,46 +134,6 @@ public class Controller
 		};
 
 		return string.Join("\n", settings);
-	}
-
-	private void ProcessCommand(string command)
-	{
-		switch (command.ToLower())
-		{
-			case var changeDirectoryCommand when changeDirectoryCommand.StartsWith("cd"):
-				ChangeDirectory(changeDirectoryCommand);
-				break;
-			case "1":
-				ConcatenateFilesAndCopyToClipboard();
-				break;
-			case "2":
-				ConfigureClipboardLimit();
-				break;
-			case "3":
-				ConfigureFileTypes();
-				break;
-			case "4":
-				ConfigureBasePath();
-				break;
-			case "5":
-				SetBasePathToCurrentDirectory();
-				break;
-			case "6":
-				ConfigureShowHiddenFiles();
-				break;
-			case "7":
-				SetTheme();
-				break;
-			case "h":
-				ShowHelp();
-				break;
-			case "q":
-				Environment.Exit(0);
-				break;
-			default:
-				_ui.ShowMessageAndWait("Error: Invalid command.");
-				break;
-		}
 	}
 
 	private void SetBasePathToCurrentDirectory()
@@ -248,8 +240,8 @@ public class Controller
 
 		if (fileTypes.Count == 0)
 		{
-			fileTypes.Add("*.cs");
-			_ui.ShowMessageAndWait("No file types were selected, so '*.cs' was set as the default.\n");
+			fileTypes.Add(Constants.DefaultFileType);
+			_ui.ShowMessageAndWait($"No file types were selected, so '{Constants.DefaultFileType}' was set as the default.\n");
 		}
 
 		_configurationService.SetTargetedFileTypes(string.Join(", ", fileTypes));
@@ -290,7 +282,7 @@ public class Controller
 		return input;
 	}
 
-	private void SetTheme()
+	private void ChangeTheme()
 	{
 		var choice = AnsiConsole.Prompt(
 			new SelectionPrompt<string>()
