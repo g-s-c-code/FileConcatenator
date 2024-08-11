@@ -5,24 +5,23 @@
 **FileConcatenator** is a utility designed to streamline the process of concatenating multiple code or text files into a single output. This tool is particularly useful for developers who need to quickly gather code from various files for analysis, review, or input into large language models like GPT. While the primary use case is to gather and concatenate code files efficiently, the application is versatile and can be tailored to handle a wide range of file types and scenarios.
 
 ## Preview
-<img src="https://raw.githubusercontent.com/g-s-c-code/FileConcatenator/master/fileconcatenator.webp" />
-
+<img src="https://raw.githubusercontent.com/g-s-c-code/FileConcatenator/master/fileconcatenator.png" />
 
 ## Features
 
-- **Concatenate Files with Ease**: Combine the contents of multiple files in a directory into a single output, with the ability to filter by file types (e.g., `*.cs`, `*.txt`).
-- **Clipboard Integration**: Automatically copies the concatenated content to your clipboard, enabling quick sharing or pasting into other applications.
+- **Effortless File Concatenation**: Merge files in a directory into a single output, with filtering by type (e.g., `*.cs`, `*.txt`).
+- **Clipboard Integration**: Automatically copies the result to the clipboard for easy sharing or pasting.
 - **Customizable Settings**:
-  - **Base Directory**: Set and switch the directory from which files are gathered.
-  - **Clipboard Character Limit**: Define the maximum number of characters that can be copied to the clipboard.
-  - **File Type Selection**: Choose which file types to include in the concatenation process.
-  - **Hidden Files Visibility**: Toggle the inclusion of hidden files.
-- **Persistent Configuration**: All settings are saved between sessions, ensuring a seamless experience each time you run the application.
-- **User-Friendly Interface**: A clear command-line interface powered by Spectre.Console, making it easy to navigate directories, adjust settings, and execute commands.
+  - **Base Directory**: Change the source directory for files.
+  - **Clipboard Limit**: Set the maximum characters for clipboard content.
+  - **File Type Selection**: Choose file types for concatenation.
+  - **Hidden Files**: Toggle inclusion of hidden files.
+- **Persistent Configuration**: Settings are saved between sessions for a consistent experience.
+- **User-Friendly Interface**: Command-line interface with Spectre.Console for easy navigation and command execution.
 
 ## Installation
 
-To install and run **FileConcatenator**, ensure you have the .NET 8.0 SDK installed on your system. You can clone the repository and build the project:
+To install **FileConcatenator**, ensure .NET 8.0 SDK is installed. Clone the repository, build, and run:
 
 ```bash
 git clone https://github.com/g-s-c-code/FileConcatenator.git
@@ -33,36 +32,62 @@ dotnet run
 
 ## Usage
 
-After running the application, you will be presented with a command-line interface where you can execute the following commands:
+Commands include:
 
-### Main Commands
+- **`cd <directory>`**: Change directory.
+- **`1` Concatenate & Copy to Clipboard**: Merge files and copy to clipboard.
+- **`2` Set Clipboard Limit**: Adjust clipboard character limit.
+- **`3` Set File Types**: Choose file types for concatenation.
+- **`4` Set Base Path (enter manually)**: Set directory manually.
+- **`5` Set Base Path to Current Directory**: Use the current directory.
+- **`6` Show Hidden Files**: Toggle hidden file visibility.
+- **`7` Change Theme**: Modify the UI color scheme.
+- **`H` Help**: Show help information.
+- **`Q` Quit**: Exit the application.
 
-- **`cd <directory>`**: Change the current working directory.
-- **`1` Concatenate & Copy to Clipboard**: Concatenates the files in the current directory (based on the specified file types) and copies the result to the clipboard.
-- **`2` Set Clipboard Limit**: Adjust the maximum number of characters to copy to the clipboard.
-- **`3` Set File Types**: Specify the file types to target during concatenation (e.g., `*.cs, *.txt`).
-- **`4` Set Base Path (enter manually)**: Manually set the base directory for future file operations.
-- **`5` Set Base Path to Current Directory**: Quickly sets the base path to the current directory.
-- **`6` Show Hidden Files**: Toggle the visibility of hidden files in the directory listing.
-- **`7` Change Theme**: Change the UI color scheme.
-- **`H` Help**: Displays detailed help information.
-- **`Q` Quit**: Exits the application.
+## Configuration
 
-### Examples
+Configuration is stored in `settings.json` and includes:
 
-- **Change Directory**: To navigate to a specific folder, use the command:
+- **BaseDirectoryPath**: Directory for file operations.
+- **ClipboardCharacterLimit**: Max characters in clipboard.
+- **FileTypes**: List of file types to include.
+- **ShowHiddenFiles**: Include hidden files.
+
+Edit `settings.json` manually or adjust via the application.
+
+## Troubleshooting
+
+- **Clipboard Issues**: Reduce clipboard limit if problems occur.
+- **File Access**: Ensure permissions for files and directories.
+- **Directory Structure**: Use `cd` to navigate directories correctly.
+
+For issues or suggestions, contribute on the [GitHub repository](https://github.com/g-s-c-code/FileConcatenator).
+
+## Creating Executables
+
+To create a runnable file for different OSes, use:
+
+- **Windows**: 
   ```bash
-  cd /path/to/your/folder
+  dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true
   ```
-
-- **Concatenate and Copy**: After setting the desired directory and file types, simply press `1` to concatenate the files and copy the result to your clipboard.
-
-- **Set File Types**: To focus on specific file types, like `.cs` and `.txt`, use:
+- **Linux (ARM64)**:
   ```bash
-  3
+  dotnet publish -c Release -r linux-arm64 --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true
   ```
-  Then select the file types from the list presented.
-
+- **Linux (x64)**:
+  ```bash
+  dotnet publish -c Release -r linux-x64 --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true
+  ```
+- **macOS (ARM64)**:
+  ```bash
+  dotnet publish -c Release -r osx-arm64 --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true
+  ```
+- **macOS (x64)**:
+  ```bash
+  dotnet publish -c Release -r osx-x64 --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true
+  ```
 ## Configuration Management
 
 The application maintains its configuration in a `settings.json` file, automatically created in the base directory. This configuration includes:
