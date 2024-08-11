@@ -32,8 +32,6 @@ dotnet run
 
 ## Creating Executables
 
-For win-x64 based systems you can simply [download the .exe](https://github.com/g-s-c-code/FileConcatenator/blob/master/FileConcatenator.exe) and run it as is.
-
 To create a self-contained runnable file for different OSes, run the following:
 
 - **Windows**: 
