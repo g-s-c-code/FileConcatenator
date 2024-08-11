@@ -6,7 +6,6 @@
 
 ## UI
 
-<img src="https://raw.githubusercontent.com/g-s-c-code/FileConcatenator/master/fileconcatenator.webp" />
 
 ## Features
 
