@@ -4,7 +4,8 @@
 
 **FileConcatenator** is a utility designed to streamline the process of concatenating multiple code or text files into a single output. This tool is particularly useful for developers who need to quickly gather code from various files for analysis, review, or input into large language models like GPT. While the primary use case is to gather and concatenate code files efficiently, the application is versatile and can be tailored to handle a wide range of file types and scenarios.
 
-## UI
+## Preview
+<img src="https://raw.githubusercontent.com/g-s-c-code/FileConcatenator/master/fileconcatenator.webp" />
 
 
 ## Features
