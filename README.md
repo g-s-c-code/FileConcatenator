@@ -30,6 +30,33 @@ dotnet build
 dotnet run
 ```
 
+## Creating Executables
+
+For win-x64 based systems you can simply [download the .exe](https://github.com/g-s-c-code/FileConcatenator/blob/master/FileConcatenator.exe).
+
+To create a runnable file for different OSes, run the following:
+
+- **Windows**: 
+  ```bash
+  dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true
+  ```
+- **Linux (ARM64)**:
+  ```bash
+  dotnet publish -c Release -r linux-arm64 --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true
+  ```
+- **Linux (x64)**:
+  ```bash
+  dotnet publish -c Release -r linux-x64 --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true
+  ```
+- **macOS (ARM64)**:
+  ```bash
+  dotnet publish -c Release -r osx-arm64 --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true
+  ```
+- **macOS (x64)**:
+  ```bash
+  dotnet publish -c Release -r osx-x64 --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true
+  ```
+
 ## Usage
 
 Commands include:
@@ -64,30 +91,7 @@ Edit `settings.json` manually or adjust via the application.
 
 For issues or suggestions, contribute on the [GitHub repository](https://github.com/g-s-c-code/FileConcatenator).
 
-## Creating Executables
 
-To create a runnable file for different OSes, use:
-
-- **Windows**: 
-  ```bash
-  dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true
-  ```
-- **Linux (ARM64)**:
-  ```bash
-  dotnet publish -c Release -r linux-arm64 --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true
-  ```
-- **Linux (x64)**:
-  ```bash
-  dotnet publish -c Release -r linux-x64 --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true
-  ```
-- **macOS (ARM64)**:
-  ```bash
-  dotnet publish -c Release -r osx-arm64 --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true
-  ```
-- **macOS (x64)**:
-  ```bash
-  dotnet publish -c Release -r osx-x64 --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true
-  ```
 ## Configuration Management
 
 The application maintains its configuration in a `settings.json` file, automatically created in the base directory. This configuration includes:
