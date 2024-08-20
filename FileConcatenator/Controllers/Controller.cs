@@ -1,5 +1,4 @@
-﻿using System.Data.SqlTypes;
-using Spectre.Console;
+﻿using Spectre.Console;
 
 namespace FileConcatenator;
 
@@ -47,19 +46,19 @@ public class Controller
 				ConcatenateFilesAndCopyToClipboard();
 				break;
 			case Constants.Commands.SetClipboardLimit:
-				ConfigureClipboardLimit();
+				SetClipboardLimit();
 				break;
 			case Constants.Commands.SetFileTypes:
-				ConfigureFileTypes();
+				SetFileTypes();
 				break;
 			case Constants.Commands.SetBasePathManual:
-				ConfigureBasePath();
+				SetBasePath();
 				break;
 			case Constants.Commands.SetBasePathCurrent:
 				SetBasePathToCurrentDirectory();
 				break;
 			case Constants.Commands.ShowHiddenFiles:
-				ConfigureShowHiddenFiles();
+				SetShowHiddenFiles();
 				break;
 			case Constants.Commands.ChangeTheme:
 				ChangeTheme();
@@ -93,6 +92,8 @@ public class Controller
 	{
 		var commands = new List<string>
 		{
+			"[cd <directory>] Change Directory",
+			"",
 			"[1] Concatenate & Copy To Clipboard",
 			"[2] Set Clipboard Limit",
 			"[3] Set File Types",
@@ -100,8 +101,6 @@ public class Controller
 			"[5] Set Base Path to Current Directory",
 			"[6] Show Hidden Files",
 			"[7] Change Theme",
-			"",
-			"[cd <directory>] Change Directory",
 			"",
 			"[H] Help",
 			"[Q] Quit"
@@ -160,8 +159,8 @@ public class Controller
 			"[4] Set Base Path - Change base directory manually.",
 			"[5] Set Base Path to Current Directory - Use current directory as base.",
 			"[6] Show Hidden Files - Toggle visibility of hidden files.",
-			"[h] Help - Show this help message.",
-			"[q] Quit - Exit the application.",
+			"[H] Help - Show this help message.",
+			"[Q] Quit - Exit the application.",
 			"",
 			"Tips:",
 			"- Use 'cd' to navigate to the desired folder before operations.",
@@ -203,14 +202,14 @@ public class Controller
 		_ui.ShowMessageAndWait(message);
 	}
 
-	private void ConfigureShowHiddenFiles()
+	private void SetShowHiddenFiles()
 	{
 		var showHiddenFiles = GetValidInput("Show hidden files? (y/n): ", new[] { "y", "n" });
 		_configurationService.SetShowHiddenFiles(showHiddenFiles == "y");
 		_ui.ShowMessageAndWait("Show hidden files setting updated.");
 	}
 
-	private void ConfigureBasePath()
+	private void SetBasePath()
 	{
 		var newBasePath = _ui.GetInput("Enter new base path: ");
 		if (DirectoryExists(newBasePath))
@@ -225,7 +224,7 @@ public class Controller
 		}
 	}
 
-	private void ConfigureFileTypes()
+	private void SetFileTypes()
 	{
 		var space = Markup.Escape("[space]");
 		var enter = Markup.Escape("[enter]");
@@ -249,7 +248,7 @@ public class Controller
 		_ui.ShowMessageAndWait("Targeted file types updated.");
 	}
 
-	private void ConfigureClipboardLimit()
+	private void SetClipboardLimit()
 	{
 		const int warningLimit = 10_000_000;
 		_ui.ShowMessage($"Warning: Setting a clipboard limit above {warningLimit} characters might cause issues on some systems.\n");
