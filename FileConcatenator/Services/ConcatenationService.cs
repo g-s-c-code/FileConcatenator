@@ -3,11 +3,11 @@ using TextCopy;
 
 namespace FileConcatenator;
 
-public class FileConcatenationService
+public class ConcatenationService
 {
 	private readonly ConfigurationService _configurationManager;
 
-	public FileConcatenationService(ConfigurationService configurationManager)
+	public ConcatenationService(ConfigurationService configurationManager)
 	{
 		_configurationManager = configurationManager;
 	}

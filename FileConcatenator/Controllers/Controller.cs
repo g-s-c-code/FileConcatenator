@@ -7,15 +7,15 @@ public class Controller
 {
 	private readonly SpectreUI _ui;
 	private readonly ConfigurationService _configurationService;
-	private readonly FileConcatenationService _fileConcatenationService;
+	private readonly ConcatenationService _concatenationService;
 	private string _currentDirectory;
 	private static readonly string[] _fileTypeChoices = Constants.FileExtensions.DefaultFileTypes;
 
-	public Controller(SpectreUI ui, ConfigurationService configurationService, FileConcatenationService fileConcatenationService)
+	public Controller(SpectreUI ui, ConfigurationService configurationService, ConcatenationService concatenationService)
 	{
 		_ui = ui;
 		_configurationService = configurationService;
-		_fileConcatenationService = fileConcatenationService;
+		_concatenationService = concatenationService;
 		_currentDirectory = _configurationService.GetBaseDirectoryPath();
 	}
 
@@ -83,8 +83,8 @@ public class Controller
 			GetCommands(),
 			GetSettingsHeaders(),
 			GetCurrentSettings(),
-			_fileConcatenationService.GetDirectories(_currentDirectory),
-			_fileConcatenationService.GetFiles(_currentDirectory)
+			_concatenationService.GetDirectories(_currentDirectory),
+			_concatenationService.GetFiles(_currentDirectory)
 		);
 	}
 
@@ -188,7 +188,7 @@ public class Controller
 
 	private void ConcatenateFilesAndCopyToClipboard()
 	{
-		var result = _fileConcatenationService.ConcatenateFiles(_currentDirectory);
+		var result = _concatenationService.ConcatenateFiles(_currentDirectory);
 		var message = result.Success ? "Files concatenated and copied to clipboard." : $"Error: {result.Message}";
 		_ui.ShowMessageAndWait(message);
 	}

@@ -33,7 +33,7 @@ internal class Program
 			return Themes.TryGetValue(themeName, out var theme) ? theme : Themes["Default"];
 		});
 		services.AddSingleton<SpectreUI>();
-		services.AddSingleton<FileConcatenationService>();
+		services.AddSingleton<ConcatenationService>();
 		services.AddSingleton<Controller>();
 	}
 }
