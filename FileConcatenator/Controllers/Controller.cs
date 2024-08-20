@@ -1,4 +1,5 @@
-﻿using Spectre.Console;
+﻿using System.Text;
+using Spectre.Console;
 
 namespace FileConcatenator;
 
@@ -25,8 +26,7 @@ public class Controller
 			try
 			{
 				RenderUI();
-				var userCommand = _ui.GetInput("Enter command:");
-				ProcessCommand(userCommand);
+				ProcessCommand(_ui.GetInput("Enter command:"));
 			}
 			catch (Exception exception)
 			{
@@ -90,50 +90,43 @@ public class Controller
 
 	private string GetCommands()
 	{
-		var commands = new List<string>
-		{
-			"[cd <directory>] Change Directory",
-			"",
-			"[1] Concatenate & Copy To Clipboard",
-			"[2] Set Clipboard Limit",
-			"[3] Set File Types",
-			"[4] Set Base Path (enter manually)",
-			"[5] Set Base Path to Current Directory",
-			"[6] Show Hidden Files",
-			"[7] Change Theme",
-			"",
-			"[H] Help",
-			"[Q] Quit"
-		};
+		var sb = new StringBuilder()
+			.AppendLine(Markup.Escape("[cd <directory>] Change Directory"))
+			.AppendLine()
+			.AppendLine(Markup.Escape("[1] Concatenate & Copy To Clipboard"))
+			.AppendLine(Markup.Escape("[2] Set Clipboard Limit"))
+			.AppendLine(Markup.Escape("[3] Set File Types"))
+			.AppendLine(Markup.Escape("[4] Set Base Path (enter manually)"))
+			.AppendLine(Markup.Escape("[5] Set Base Path to Current Directory"))
+			.AppendLine(Markup.Escape("[6] Show Hidden Files"))
+			.AppendLine(Markup.Escape("[7] Change Theme"))
+			.AppendLine()
+			.AppendLine(Markup.Escape("[H] Help"))
+			.AppendLine(Markup.Escape("[Q] Quit"));
 
-		return Markup.Escape(string.Join("\n", commands));
+		return sb.ToString();
 	}
 
 	private string GetSettingsHeaders()
 	{
-		var settings = new List<string>
-		{
-			"Clipboard Limit:",
-			"Targeted File Types:",
-			"Base Path:",
-			"Show Hidden Files:",
-		};
+		var sb = new StringBuilder()
+			.AppendLine("Clipboard Limit:")
+			.AppendLine("Targeted File Types:")
+			.AppendLine("Base Path:")
+			.Append("Show Hidden Files:");
 
-		return string.Join("\n", settings);
+		return sb.ToString();
 	}
 
 	private string GetCurrentSettings()
 	{
-		var settings = new List<string>
-		{
-			_configurationService.GetClipboardCharacterLimit().ToString(),
-			_configurationService.GetTargetedFileTypes(),
-			_configurationService.GetBaseDirectoryPath(),
-			_configurationService.GetShowHiddenFiles() ? "Yes" : "No",
-			""
-		};
+		var sb = new StringBuilder()
+			.AppendLine(_configurationService.GetClipboardCharacterLimit().ToString())
+			.AppendLine(_configurationService.GetTargetedFileTypes())
+			.AppendLine(_configurationService.GetBaseDirectoryPath())
+			.AppendLine(_configurationService.GetShowHiddenFiles() ? "Yes" : "No");
 
-		return string.Join("\n", settings);
+		return sb.ToString();
 	}
 
 	private void SetBasePathToCurrentDirectory()
@@ -144,34 +137,32 @@ public class Controller
 
 	private void ShowHelp()
 	{
-		var helpText = new List<string>
-		{
-			"FILE CONCATENATOR",
-			"",
-			"Purpose:",
-			"Concatenate text files from a selected directory and copy the combined content to your clipboard.",
-			"",
-			"Commands:",
-			"[cd <directory>] - Change to the specified directory.",
-			"[1] Concatenate & Copy - Combine files and copy to clipboard.",
-			"[2] Set Clipboard Limit - Set max characters for clipboard.",
-			"[3] Set File Types - Choose which file types to concatenate.",
-			"[4] Set Base Path - Change base directory manually.",
-			"[5] Set Base Path to Current Directory - Use current directory as base.",
-			"[6] Show Hidden Files - Toggle visibility of hidden files.",
-			"[H] Help - Show this help message.",
-			"[Q] Quit - Exit the application.",
-			"",
-			"Tips:",
-			"- Use 'cd' to navigate to the desired folder before operations.",
-			"- Set a reasonable clipboard limit to handle large text blocks.",
-			"- Default file types are '*.cs' if none are selected.",
-			"- Hidden files are not shown by default; toggle with [6].",
-			"",
-			"Note: Settings are persistent between sessions."
-		};
+		var sb = new StringBuilder()
+			.AppendLine("FILE CONCATENATOR")
+			.AppendLine()
+			.AppendLine("Purpose:")
+			.AppendLine("Concatenate text files from a selected directory and copy the combined content to your clipboard.")
+			.AppendLine()
+			.AppendLine("Commands:")
+			.AppendLine("[cd <directory>] - Change to the specified directory.")
+			.AppendLine("[1] Concatenate & Copy - Combine files and copy to clipboard.")
+			.AppendLine("[2] Set Clipboard Limit - Set max characters for clipboard.")
+			.AppendLine("[3] Set File Types - Choose which file types to concatenate.")
+			.AppendLine("[4] Set Base Path - Change base directory manually.")
+			.AppendLine("[5] Set Base Path to Current Directory - Use current directory as base.")
+			.AppendLine("[6] Show Hidden Files - Toggle visibility of hidden files.")
+			.AppendLine("[H] Help - Show this help message.")
+			.AppendLine("[Q] Quit - Exit the application.")
+			.AppendLine()
+			.AppendLine("Tips:")
+			.AppendLine("- Use 'cd' to navigate to the desired folder before operations.")
+			.AppendLine("- Set a reasonable clipboard limit to handle large text blocks.")
+			.AppendLine("- Default file types are '*.cs' if none are selected.")
+			.AppendLine("- Hidden files are not shown by default; toggle with [6].")
+			.AppendLine()
+			.Append("Note: Settings are persistent between sessions.");
 
-		_ui.ShowMessageAndWait(string.Join("\n", helpText));
+		_ui.ShowMessageAndWait(sb.ToString());
 	}
 
 	private void ChangeDirectory(string command)
@@ -212,7 +203,7 @@ public class Controller
 	private void SetBasePath()
 	{
 		var newBasePath = _ui.GetInput("Enter new base path: ");
-		if (DirectoryExists(newBasePath))
+		if (Directory.Exists(newBasePath))
 		{
 			_configurationService.SetBaseDirectoryPath(newBasePath);
 			_currentDirectory = newBasePath;
@@ -293,6 +284,4 @@ public class Controller
 		_configurationService.SetSelectedTheme(choice);
 		_ui.ShowMessageAndWait("Theme updated.");
 	}
-
-	private bool DirectoryExists(string path) => Directory.Exists(path);
 }
