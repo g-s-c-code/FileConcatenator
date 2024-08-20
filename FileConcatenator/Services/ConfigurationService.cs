@@ -116,7 +116,7 @@ public class ConfigurationService
 		}
 		else
 		{
-			_configuration.FileTypes = string.Join(",", fileTypes
+			_configuration.FileTypes = string.Join(", ", fileTypes
 				.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
 				.Select(s => s.Trim()));
 		}

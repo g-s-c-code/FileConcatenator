@@ -16,7 +16,7 @@ public static class Constants
 			"*.aspx", "*.bat", "*.c", "*.cc", "*.cfg", "*.cfm", "*.cgi", "*.class", "*.cmd",
 			"*.com", "*.cpp", "*.cs", "*.css", "*.csv", "*.cxx", "*.dat", "*.db", "*.dbf", "*.env",
 			"*.htm", "*.html", "*.ini", "*.java", "*.js", "*.json", "*.jsp", "*.jsx", "*.log",
-			"*.m", "*.md", "*.php", "*.pl", "*.py", "*.rb", "*.sass", "*.scala", "*.scss",
+			"*.m", "*.md", "*.php", "*.pl", "*.py", "*.razor", "*.rb", "*.sass", "*.scala", "*.scss",
 			"*.sh", "*.sln", "*.sql", "*.swift", "*.tex", "*.ts", "*.vb", "*.vbs", "*.vcxproj",
 			"*.xml", "*.yaml", "*.yml"
 		};
