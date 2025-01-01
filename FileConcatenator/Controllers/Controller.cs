@@ -134,12 +134,12 @@ public class Controller
 	{
 		var helpSections = new Dictionary<string, string[]>
 		{
-			["Purpose"] = new[]
-			{
+			["Purpose"] =
+			[
 				"Concatenate text files from a selected directory and copy the combined content to your clipboard."
-			},
-			["Commands"] = new[]
-			{
+			],
+			["Commands"] =
+			[
 				"cd <directory> - Change to the specified directory",
 				"1 - Concatenate & Copy - Combine files and copy to clipboard",
 				"2 - Set Clipboard Limit - Set max characters for clipboard",
@@ -149,16 +149,16 @@ public class Controller
 				"6 - Show Hidden Files - Toggle visibility of hidden files",
 				"H - Help - Show this help message",
 				"Q - Quit - Exit the application"
-			},
-			["Tips"] = new[]
-			{
+			],
+			["Tips"] =
+			[
 				"- Use 'cd' to navigate to the desired folder before operations",
 				"- Set a reasonable clipboard limit to handle large text blocks",
 				"- Default file types are '*.cs' if none are selected",
 				"- Hidden files are not shown by default; toggle with 6",
 				"",
 				"Note: Settings are persistent between sessions"
-			}
+			]
 		};
 
 		var helpText = new StringBuilder("FILE CONCATENATOR\n\n");
