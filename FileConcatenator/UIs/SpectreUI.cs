@@ -5,9 +5,8 @@ public class SpectreUI
 {
 	private const string BoldFormat = "bold";
 	private const string UnderlineFormat = "underline";
-	private readonly Color _defaultTextColor = Color.White;
-	private readonly Color _defaultHeaderColor = Color.Grey78;
-	private readonly Color _accentColor = Color.SteelBlue;
+	private readonly Color _textColor = Color.White;
+	private readonly Color _headerColor = Color.LightSkyBlue1;
 
 	public void Clear() => AnsiConsole.Clear();
 
@@ -22,10 +21,10 @@ public class SpectreUI
 	public string GetInput(string input) => AnsiConsole.Ask<string>(input);
 
 	public string Text(string text, Color? color = null)
-		=> FormatText(text, color ?? _defaultTextColor, BoldFormat);
+		=> FormatText(text, color ?? _textColor, BoldFormat);
 
 	public string Header(string text, Color? color = null)
-		=> FormatText(text, color ?? _defaultHeaderColor, BoldFormat, UnderlineFormat).ToUpper();
+		=> FormatText(text, color ?? _headerColor, BoldFormat, UnderlineFormat).ToUpper();
 
 	private string FormatText(string text, Color color, params string[] formats)
 		=> $"[{string.Join(" ", formats)} {color}]{text}[/]";
@@ -34,12 +33,12 @@ public class SpectreUI
 	{
 		var tree = new Tree(header)
 		{
-			Style = new Style(foreground: Color.Blue)
+			Style = new Style(foreground: Color.RosyBrown)
 		};
 
 		foreach (var item in items)
 		{
-			tree.AddNode(Text(Markup.Escape(item), Color.IndianRed));
+			tree.AddNode(Text(Markup.Escape(item), Color.White));
 		}
 
 		return tree;
@@ -55,25 +54,37 @@ public class SpectreUI
 			.AddColumns(
 				new TableColumn(leftColumn),
 				new TableColumn(rightColumn))
-			.BorderColor(_accentColor)
+			.BorderColor(_textColor)
 			.Border(TableBorder.Horizontal);
 
 		AnsiConsole.Write(mainLayout);
 	}
 
-	private Table CreateRightColumn(string currentDirectory, IEnumerable<string> directoriesTree,
-		IEnumerable<string> filesTree)
+	private Table CreateRightColumn(string currentDirectory, IEnumerable<string> directoriesTree, IEnumerable<string> filesTree)
 	{
-		var directoryHeader = CreateHeaderWithContent("Current Directory:", currentDirectory);
-
 		return new Table()
 			.AddColumns(
-				new TableColumn(directoryHeader),
+				new TableColumn(CurrentDirectoryPathUI()),
 				new TableColumn(""))
 			.AddRow(
-				DisplayTree(Header("\nFolders:", _accentColor), directoriesTree),
-				DisplayTree(Header("\nFiles:", _accentColor), filesTree))
+				DisplayTree(Header("\nFolders:", _headerColor), directoriesTree),
+				DisplayTree(Header("\nFiles:", _headerColor), filesTree))
 			.Border(TableBorder.None);
+	}
+
+	private Panel CurrentDirectoryPathUI()
+	{
+		var currentDirectory = new TextPath(Directory.GetCurrentDirectory().ToUpper())
+			.SeparatorColor(Color.RosyBrown)
+			.RootColor(Color.White)
+			.StemColor(Color.White)
+			.LeafColor(Color.White);
+
+		return new Panel(currentDirectory)
+		{
+			Padding = new Padding(0),
+			Border = BoxBorder.None,
+		};
 	}
 
 	private Table CreateLeftColumn(string settingsHeaders, string currentSettings, string commands)
@@ -82,9 +93,10 @@ public class SpectreUI
 		var lowerSection = CreateCommandsSection(commands);
 
 		return new Table()
-			.AddColumn(new TableColumn(Header("Current Settings:", _accentColor)))
+			.AddColumn(new TableColumn(Header("Current Settings:")))
 			.AddRow(upperSection)
-			.AddRow(Header("Commands:", _accentColor))
+			.AddEmptyRow()
+			.AddRow(Header("Commands:"))
 			.AddRow(lowerSection)
 			.Border(TableBorder.None)
 			.Width(50);
@@ -93,15 +105,15 @@ public class SpectreUI
 	private Table CreateSettingsSection(string settingsHeaders, string currentSettings)
 		=> new Table()
 			.AddColumns(
-				new TableColumn(Text(settingsHeaders, _accentColor)),
-				new TableColumn(Text(currentSettings, _accentColor)))
+				new TableColumn(Text(settingsHeaders, _textColor)),
+				new TableColumn(Text(currentSettings, _textColor)))
 			.Border(TableBorder.None);
 
 	private Table CreateCommandsSection(string commands)
 		=> new Table()
-			.AddColumn(new TableColumn(Text(commands, _accentColor)))
+			.AddColumn(new TableColumn(Text(commands, _textColor)))
 			.Border(TableBorder.None);
 
-	private string CreateHeaderWithContent(string headerText, string content)
-		=> $"{Header(headerText, _accentColor)} {Text(content, _accentColor)}";
+	private string CreateHeaderWithContent(string headerText, IRenderable content)
+		=> $"{Header(headerText)} {(content)}";
 }
