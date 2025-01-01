@@ -1,102 +1,118 @@
 ﻿using System.Text;
 using TextCopy;
 
-namespace FileConcatenator;
-
 public class ConcatenationService
 {
-	private readonly ConfigurationService _configurationManager;
+	private readonly ConfigurationService _configurationService;
+	private const string FileNotAccessibleMessage = "Error: Access to the path '{0}' is denied.";
 
-	public ConcatenationService(ConfigurationService configurationManager)
+	public ConcatenationService(ConfigurationService configurationService)
 	{
-		_configurationManager = configurationManager;
+		_configurationService = configurationService;
 	}
 
-	public IEnumerable<string> GetDirectories(string path)
+	public IReadOnlyCollection<string> GetDirectories(string path)
 	{
-		var directories = new List<string>();
 		try
 		{
-			foreach (var dir in Directory.GetDirectories(path))
-			{
-				if (!_configurationManager.GetShowHiddenFiles() && (new DirectoryInfo(dir).Attributes & FileAttributes.Hidden) != 0)
-				{
-					continue;
-				}
-				directories.Add($"{Path.GetFileName(dir)}");
-			}
+			return Directory.GetDirectories(path)
+				.Where(dir => ShouldIncludeItem(dir))
+				.Select(Path.GetFileName)
+				.ToList();
 		}
 		catch (UnauthorizedAccessException)
 		{
-			directories.Add($"Error: Access to the path '{path}' is denied.");
+			return new[] { string.Format(FileNotAccessibleMessage, path) };
 		}
 		catch (Exception ex)
 		{
-			directories.Add($"Error: {ex.Message}");
+			return new[] { $"Error: {ex.Message}" };
 		}
-		return directories;
 	}
 
-	public IEnumerable<string> GetFiles(string path)
+	public IReadOnlyCollection<string> GetFiles(string path)
 	{
-		var files = new List<string>();
 		try
 		{
-			foreach (var file in Directory.GetFiles(path))
-			{
-				if (!_configurationManager.GetShowHiddenFiles() && (new FileInfo(file).Attributes & FileAttributes.Hidden) != 0)
-				{
-					continue;
-				}
-				files.Add($"{Path.GetFileName(file)}");
-			}
+			return Directory.GetFiles(path)
+				.Where(file => ShouldIncludeItem(file))
+				.Select(Path.GetFileName)
+				.ToList();
 		}
 		catch (UnauthorizedAccessException)
 		{
-			files.Add($"Error: Access to the path '{path}' is denied.");
+			return new[] { string.Format(FileNotAccessibleMessage, path) };
 		}
 		catch (Exception ex)
 		{
-			files.Add($"Error: {ex.Message}");
+			return new[] { $"Error: {ex.Message}" };
 		}
-		return files;
 	}
 
 	public (bool Success, string Message) ConcatenateFiles(string path)
 	{
-		var sb = new StringBuilder();
-		bool accessDeniedFlag = false;
+		var contentBuilder = new StringBuilder();
+		var accessDeniedOccurred = false;
 
-		foreach (var fileType in _configurationManager.GetTargetedFileTypes().Split(','))
+		foreach (var fileType in _configurationService.FileTypes.Split(','))
 		{
-			try
+			if (!TryProcessFilesOfType(path, fileType.Trim(), contentBuilder, ref accessDeniedOccurred))
 			{
-				var files = Directory.GetFiles(path, fileType.Trim(), SearchOption.AllDirectories);
-				foreach (var file in files)
-				{
-					try
-					{
-						if (sb.Length > _configurationManager.GetClipboardCharacterLimit())
-						{
-							return (false, "Warning: Clipboard character limit reached. Not all files were concatenated.");
-						}
-						sb.AppendLine($"//{Path.GetFileName(file)}");
-						sb.AppendLine(File.ReadAllText(file));
-						sb.AppendLine();
-					}
-					catch (UnauthorizedAccessException)
-					{
-						accessDeniedFlag = true;
-					}
-				}
-			}
-			catch (UnauthorizedAccessException)
-			{
-				accessDeniedFlag = true;
+				return (false, "Warning: Clipboard character limit reached. Not all files were concatenated.");
 			}
 		}
 
-		ClipboardService.SetText(sb.ToString());
-		return accessDeniedFlag ? (true, "Note: Some files or directories could not be accessed and were skipped.\n") : (true, string.Empty);
+		ClipboardService.SetText(contentBuilder.ToString());
+		return accessDeniedOccurred
+			? (true, "Note: Some files or directories could not be accessed and were skipped.\n")
+			: (true, string.Empty);
+	}
+
+	private bool TryProcessFilesOfType(string path, string fileType, StringBuilder contentBuilder, ref bool accessDeniedOccurred)
+	{
+		try
+		{
+			var files = Directory.GetFiles(path, fileType, SearchOption.AllDirectories);
+			foreach (var file in files)
+			{
+				if (!TryAppendFileContent(file, contentBuilder))
+				{
+					accessDeniedOccurred = true;
+					continue;
+				}
+
+				if (contentBuilder.Length > _configurationService.ClipboardCharacterLimit)
+				{
+					return false;
+				}
+			}
+		}
+		catch (UnauthorizedAccessException)
+		{
+			accessDeniedOccurred = true;
+		}
+
+		return true;
+	}
+
+	private bool TryAppendFileContent(string filePath, StringBuilder contentBuilder)
+	{
+		try
+		{
+			contentBuilder.AppendLine($"//{Path.GetFileName(filePath)}");
+			contentBuilder.AppendLine(File.ReadAllText(filePath));
+			contentBuilder.AppendLine();
+			return true;
+		}
+		catch (UnauthorizedAccessException)
+		{
+			return false;
+		}
+	}
+
+	private bool ShouldIncludeItem(string path)
+	{
+		return _configurationService.ShowHiddenFiles ||
+			   (File.GetAttributes(path) & FileAttributes.Hidden) == 0;
 	}
 }

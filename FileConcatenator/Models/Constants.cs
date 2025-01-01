@@ -1,18 +1,11 @@
-﻿namespace FileConcatenator;
-
-public static class Constants
+﻿public static class Constants
 {
-	public static class Themes
-	{
-		public const string Default = "Default";
-		public const string Minimalistic = "Minimalistic";
-		public const string Pastel = "Pastel";
-		public const string Hacker = "Hacker";
-	}
-
 	public static class FileExtensions
 	{
-		public static readonly string[] DefaultFileTypes = {
+		public const string DefaultFileType = "*.cs";
+
+		public static readonly IReadOnlySet<string> SupportedFileTypes = new HashSet<string>
+		{
 			"*.aspx", "*.bat", "*.c", "*.cc", "*.cfg", "*.cfm", "*.cgi", "*.class", "*.cmd",
 			"*.com", "*.cpp", "*.cs", "*.css", "*.csv", "*.cxx", "*.dat", "*.db", "*.dbf", "*.env",
 			"*.htm", "*.html", "*.ini", "*.java", "*.js", "*.json", "*.jsp", "*.jsx", "*.log",
@@ -30,11 +23,8 @@ public static class Constants
 		public const string SetBasePathManual = "4";
 		public const string SetBasePathCurrent = "5";
 		public const string ShowHiddenFiles = "6";
-		public const string ChangeTheme = "7";
 		public const string Help = "h";
 		public const string Quit = "q";
 		public const string ChangeDirectoryPrefix = "cd";
 	}
-
-	public const string DefaultFileType = "*.cs";
 }

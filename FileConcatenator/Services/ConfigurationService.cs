@@ -1,7 +1,5 @@
 ﻿using Newtonsoft.Json;
 
-namespace FileConcatenator;
-
 public class ConfigurationService
 {
 	private readonly string _settingsFilePath;
@@ -13,114 +11,90 @@ public class ConfigurationService
 		_configuration = LoadOrCreateConfiguration();
 	}
 
-	public Configuration LoadOrCreateConfiguration()
+	public bool ShowHiddenFiles => _configuration.ShowHiddenFiles;
+	public int ClipboardCharacterLimit => _configuration.ClipboardCharacterLimit;
+	public string BaseDirectoryPath => _configuration.BaseDirectoryPath ?? "/";
+	public string FileTypes => _configuration.FileTypes ?? string.Empty;
+
+	private Configuration LoadOrCreateConfiguration()
 	{
-		if (File.Exists(_settingsFilePath))
+		var config = TryLoadConfiguration() ?? new Configuration();
+
+		if (string.IsNullOrEmpty(config.BaseDirectoryPath))
 		{
-			try
-			{
-				_configuration = JsonConvert.DeserializeObject<Configuration>(File.ReadAllText(_settingsFilePath)) ?? new Configuration();
-			}
-			catch (Exception)
-			{
-				_configuration = new Configuration();
-			}
-		}
-		else
-		{
-			_configuration = new Configuration();
+			config.BaseDirectoryPath = GetInitialBaseDirectoryPath();
 		}
 
-		// If BaseDirectoryPath is not set, initialize it
-		if (string.IsNullOrEmpty(_configuration.BaseDirectoryPath))
+		SaveConfiguration(config);
+		return config;
+	}
+
+	private Configuration? TryLoadConfiguration()
+	{
+		if (!File.Exists(_settingsFilePath))
 		{
-			_configuration.BaseDirectoryPath = GetInitialBaseDirectoryPath();
+			return null;
 		}
 
-		SaveConfiguration();
-		return _configuration;
-	}
-
-	private void SaveConfiguration()
-	{
-		File.WriteAllText(_settingsFilePath, JsonConvert.SerializeObject(_configuration, Formatting.Indented));
-	}
-
-	public string GetSelectedTheme()
-	{
-		return _configuration.Theme ?? Constants.Themes.Default;
-	}
-
-	public void SetSelectedTheme(string theme)
-	{
-		_configuration.Theme = theme;
-		SaveConfiguration();
-	}
-
-	private string GetInitialBaseDirectoryPath()
-	{
-		if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+		try
 		{
-			var drives = DriveInfo.GetDrives();
-			return drives.Length > 0 ? drives[0].RootDirectory.FullName : "/";
+			return JsonConvert.DeserializeObject<Configuration>(File.ReadAllText(_settingsFilePath));
 		}
-		else
+		catch (Exception)
+		{
+			return null;
+		}
+	}
+
+	private void SaveConfiguration(Configuration configuration)
+	{
+		File.WriteAllText(_settingsFilePath, JsonConvert.SerializeObject(configuration, Formatting.Indented));
+	}
+
+	private static string GetInitialBaseDirectoryPath()
+	{
+		if (Environment.OSVersion.Platform != PlatformID.Win32NT)
 		{
 			return "/";
 		}
+
+		var drives = DriveInfo.GetDrives();
+		return drives.Length > 0 ? drives[0].RootDirectory.FullName : "/";
 	}
 
-	public bool GetShowHiddenFiles()
+	public void SetShowHiddenFiles(bool value)
 	{
-		return _configuration.ShowHiddenFiles;
+		_configuration.ShowHiddenFiles = value;
+		SaveConfiguration(_configuration);
 	}
 
-	public void SetShowHiddenFiles(bool showHiddenFiles)
+	public void SetClipboardCharacterLimit(int value)
 	{
-		_configuration.ShowHiddenFiles = showHiddenFiles;
-		SaveConfiguration();
+		_configuration.ClipboardCharacterLimit = value;
+		SaveConfiguration(_configuration);
 	}
 
-	public int GetClipboardCharacterLimit()
+	public void SetBaseDirectoryPath(string path)
 	{
-		return _configuration.ClipboardCharacterLimit;
+		_configuration.BaseDirectoryPath = path;
+		SaveConfiguration(_configuration);
 	}
 
-	public void SetClipboardCharacterLimit(int clipboardCharacterLimit)
+	public void SetFileTypes(string types)
 	{
-		_configuration.ClipboardCharacterLimit = clipboardCharacterLimit;
-		SaveConfiguration();
+		_configuration.FileTypes = NormalizeFileTypes(types);
+		SaveConfiguration(_configuration);
 	}
 
-	public string GetBaseDirectoryPath()
+	private static string NormalizeFileTypes(string types)
 	{
-		return _configuration.BaseDirectoryPath ?? "/";
-	}
-
-	public void SetBaseDirectoryPath(string baseDirectoryPath)
-	{
-		_configuration.BaseDirectoryPath = baseDirectoryPath;
-		SaveConfiguration();
-	}
-
-	public string GetTargetedFileTypes()
-	{
-		return _configuration.FileTypes ?? string.Empty;
-	}
-
-	public void SetTargetedFileTypes(string fileTypes)
-	{
-		if (string.IsNullOrWhiteSpace(fileTypes))
+		if (string.IsNullOrWhiteSpace(types))
 		{
-			_configuration.FileTypes = string.Empty;
-		}
-		else
-		{
-			_configuration.FileTypes = string.Join(", ", fileTypes
-				.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-				.Select(s => s.Trim()));
+			return string.Empty;
 		}
 
-		SaveConfiguration();
+		return string.Join(", ", types
+			.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+			.Select(s => s.Trim()));
 	}
 }

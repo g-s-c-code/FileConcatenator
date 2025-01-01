@@ -9,14 +9,14 @@ public class Controller
 	private readonly ConfigurationService _configurationService;
 	private readonly ConcatenationService _concatenationService;
 	private string _currentDirectory;
-	private static readonly string[] _fileTypeChoices = Constants.FileExtensions.DefaultFileTypes;
+	private static readonly IReadOnlySet<string> _fileTypeChoices = Constants.FileExtensions.SupportedFileTypes;
 
 	public Controller(SpectreUI ui, ConfigurationService configurationService, ConcatenationService concatenationService)
 	{
 		_ui = ui;
 		_configurationService = configurationService;
 		_concatenationService = concatenationService;
-		_currentDirectory = _configurationService.GetBaseDirectoryPath();
+		_currentDirectory = _configurationService.BaseDirectoryPath;
 	}
 
 	public void Run()
@@ -59,9 +59,6 @@ public class Controller
 				break;
 			case Constants.Commands.ShowHiddenFiles:
 				SetShowHiddenFiles();
-				break;
-			case Constants.Commands.ChangeTheme:
-				ChangeTheme();
 				break;
 			case Constants.Commands.Help:
 				ShowHelp();
@@ -121,10 +118,10 @@ public class Controller
 	private string GetCurrentSettings()
 	{
 		var sb = new StringBuilder()
-			.AppendLine(_configurationService.GetClipboardCharacterLimit().ToString())
-			.AppendLine(_configurationService.GetTargetedFileTypes())
-			.AppendLine(_configurationService.GetBaseDirectoryPath())
-			.AppendLine(_configurationService.GetShowHiddenFiles() ? "Yes" : "No");
+			.AppendLine(_configurationService.ClipboardCharacterLimit.ToString())
+			.AppendLine(_configurationService.FileTypes)
+			.AppendLine(_configurationService.BaseDirectoryPath)
+			.AppendLine(_configurationService.ShowHiddenFiles ? "Yes" : "No");
 
 		return sb.ToString();
 	}
@@ -231,11 +228,11 @@ public class Controller
 
 		if (fileTypes.Count == 0)
 		{
-			fileTypes.Add(Constants.DefaultFileType);
-			_ui.ShowMessageAndWait($"No file types were selected, so '{Constants.DefaultFileType}' was set as the default.\n");
+			fileTypes.Add(Constants.FileExtensions.DefaultFileType);
+			_ui.ShowMessageAndWait($"No file types were selected, so '{Constants.FileExtensions.DefaultFileType}' was set as the default.\n");
 		}
 
-		_configurationService.SetTargetedFileTypes(string.Join(", ", fileTypes));
+		_configurationService.SetFileTypes(string.Join(", ", fileTypes));
 		_ui.ShowMessageAndWait("Targeted file types updated.");
 	}
 
@@ -244,7 +241,7 @@ public class Controller
 		const int warningLimit = 10_000_000;
 		_ui.ShowMessage($"Warning: Setting a clipboard limit above {warningLimit} characters might cause issues on some systems.\n");
 
-		var input = _ui.GetInput($"Enter new clipboard character limit (current: {_configurationService.GetClipboardCharacterLimit()}): ");
+		var input = _ui.GetInput($"Enter new clipboard character limit (current: {_configurationService.ClipboardCharacterLimit}): ");
 		if (int.TryParse(input, out var newLimit) && newLimit > 0)
 		{
 			_configurationService.SetClipboardCharacterLimit(newLimit);
@@ -271,17 +268,5 @@ public class Controller
 			}
 		} while (!validOptions.Contains(input));
 		return input;
-	}
-
-	private void ChangeTheme()
-	{
-		var choice = AnsiConsole.Prompt(
-			new SelectionPrompt<string>()
-				.Title("Select a theme:")
-				.AddChoices(Program.Themes.Keys));
-
-		_ui.SetTheme(Program.Themes[choice]);
-		_configurationService.SetSelectedTheme(choice);
-		_ui.ShowMessageAndWait("Theme updated.");
 	}
 }

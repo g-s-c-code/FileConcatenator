@@ -5,94 +5,105 @@ namespace FileConcatenator;
 
 public class SpectreUI
 {
-	private Theme _theme;
+	private const string BoldFormat = "bold";
+	private const string UnderlineFormat = "underline";
+	private readonly Color _defaultTextColor = Color.White;
+	private readonly Color _defaultHeaderColor = Color.Grey78;
+	private readonly Color _accentColor = Color.SteelBlue;
 
-	public SpectreUI(Theme theme)
-	{
-		_theme = theme;
-	}
+	public void Clear() => AnsiConsole.Clear();
 
-	public void SetTheme(Theme theme)
-	{
-		_theme = theme;
-	}
-
-	public void Clear()
-	{
-		AnsiConsole.Clear();
-	}
-
-	public void ShowMessage(string message)
-	{
-		AnsiConsole.Write(message);
-	}
+	public void ShowMessage(string message) => AnsiConsole.Write(message);
 
 	public void ShowMessageAndWait(string message)
 	{
-		AnsiConsole.Write(message);
+		ShowMessage(message);
 		Console.ReadKey();
 	}
 
-	public string GetInput(string input)
-	{
-		Text styledInput = new Text(input, _theme.TextColor);
+	public string GetInput(string input) => AnsiConsole.Ask<string>(input);
 
-		return AnsiConsole.Ask<string>(input);
-	}
 	public string Text(string text, Color? color = null)
-	{
-		return $"[bold {color ?? Color.White}]{text}[/]";
-	}
+		=> FormatText(text, color ?? _defaultTextColor, BoldFormat);
 
 	public string Header(string text, Color? color = null)
-	{
-		return $"[bold underline {color ?? Color.Grey78}]{text}[/]".ToUpper();
-	}
+		=> FormatText(text, color ?? _defaultHeaderColor, BoldFormat, UnderlineFormat).ToUpper();
+
+	private string FormatText(string text, Color color, params string[] formats)
+		=> $"[{string.Join(" ", formats)} {color}]{text}[/]";
 
 	public IRenderable DisplayTree(string header, IEnumerable<string> items)
 	{
 		var tree = new Tree(header)
 		{
-			Style = new Style(foreground: _theme.TreeBranchColor)
+			Style = new Style(foreground: Color.Blue)
 		};
+
 		foreach (var item in items)
 		{
-			tree.AddNode(Text(Markup.Escape(item), _theme.TextColor));
+			tree.AddNode(Text(Markup.Escape(item), Color.IndianRed));
 		}
+
 		return tree;
 	}
 
-	public void MainLayout(string currentDirectory, string commands, string settingsHeaders, string currentSettings, IEnumerable<string> directoriesTree, IEnumerable<string> filesTree)
+	public void MainLayout(string currentDirectory, string commands, string settingsHeaders,
+		string currentSettings, IEnumerable<string> directoriesTree, IEnumerable<string> filesTree)
 	{
-		var rightTableColumn = new Table();
-		rightTableColumn.AddColumn(new TableColumn(Header("Current Directory:", _theme.HeaderColor) + " " + Text(currentDirectory, _theme.AccentColor)));
-		rightTableColumn.AddColumn(new TableColumn(""));
-		rightTableColumn.AddRow(DisplayTree(Header("\nFolders:", _theme.HeaderColor), directoriesTree), DisplayTree(Header("\nFiles:", _theme.HeaderColor), filesTree));
-		rightTableColumn.Border = TableBorder.None;
+		var rightColumn = CreateRightColumn(currentDirectory, directoriesTree, filesTree);
+		var leftColumn = CreateLeftColumn(settingsHeaders, currentSettings, commands);
 
-		var upperLeftColumn = new Table();
-		upperLeftColumn.AddColumn(new TableColumn(Text(settingsHeaders, _theme.TextColor)));
-		upperLeftColumn.AddColumn(new TableColumn(Text(currentSettings, _theme.AccentColor)));
-		upperLeftColumn.Border = TableBorder.None;
-
-		var lowerLeftColumn = new Table();
-		lowerLeftColumn.AddColumn(new TableColumn(Text(commands, _theme.TextColor)));
-		lowerLeftColumn.Border = TableBorder.None;
-
-		var leftTableColumn = new Table();
-		leftTableColumn.AddColumn(new TableColumn(Header("Current Settings:", _theme.HeaderColor)));
-		leftTableColumn.AddRow(upperLeftColumn);
-		leftTableColumn.AddRow(Header("Commands:", _theme.HeaderColor));
-		leftTableColumn.AddRow(lowerLeftColumn);
-		leftTableColumn.Border = TableBorder.None;
-		leftTableColumn.Width(50);
-
-		var mainLayout = new Table();
-		mainLayout.AddColumn(new TableColumn(leftTableColumn));
-		mainLayout.AddColumn(new TableColumn(rightTableColumn));
-		mainLayout.Border = _theme.BorderType;
-		mainLayout.BorderColor(_theme.BorderColor);
+		var mainLayout = new Table()
+			.AddColumns(
+				new TableColumn(leftColumn),
+				new TableColumn(rightColumn))
+			.BorderColor(_accentColor)
+			.Border(TableBorder.Horizontal);
 
 		AnsiConsole.Write(mainLayout);
 	}
+
+	private Table CreateRightColumn(string currentDirectory, IEnumerable<string> directoriesTree,
+		IEnumerable<string> filesTree)
+	{
+		var directoryHeader = CreateHeaderWithContent("Current Directory:", currentDirectory);
+
+		return new Table()
+			.AddColumns(
+				new TableColumn(directoryHeader),
+				new TableColumn(""))
+			.AddRow(
+				DisplayTree(Header("\nFolders:", _accentColor), directoriesTree),
+				DisplayTree(Header("\nFiles:", _accentColor), filesTree))
+			.Border(TableBorder.None);
+	}
+
+	private Table CreateLeftColumn(string settingsHeaders, string currentSettings, string commands)
+	{
+		var upperSection = CreateSettingsSection(settingsHeaders, currentSettings);
+		var lowerSection = CreateCommandsSection(commands);
+
+		return new Table()
+			.AddColumn(new TableColumn(Header("Current Settings:", _accentColor)))
+			.AddRow(upperSection)
+			.AddRow(Header("Commands:", _accentColor))
+			.AddRow(lowerSection)
+			.Border(TableBorder.None)
+			.Width(50);
+	}
+
+	private Table CreateSettingsSection(string settingsHeaders, string currentSettings)
+		=> new Table()
+			.AddColumns(
+				new TableColumn(Text(settingsHeaders, _accentColor)),
+				new TableColumn(Text(currentSettings, _accentColor)))
+			.Border(TableBorder.None);
+
+	private Table CreateCommandsSection(string commands)
+		=> new Table()
+			.AddColumn(new TableColumn(Text(commands, _accentColor)))
+			.Border(TableBorder.None);
+
+	private string CreateHeaderWithContent(string headerText, string content)
+		=> $"{Header(headerText, _accentColor)} {Text(content, _accentColor)}";
 }

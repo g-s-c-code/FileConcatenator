@@ -1,10 +1,7 @@
-﻿namespace FileConcatenator;
-
-public class Configuration
+﻿public record Configuration
 {
 	public bool ShowHiddenFiles { get; set; } = false;
-	public int ClipboardCharacterLimit { get; set; } = 5000000;
-	public string? BaseDirectoryPath { get; set; }
-	public string? FileTypes { get; set; } = "*.cs";
-	public string? Theme { get; set; } = "Default";
+	public int ClipboardCharacterLimit { get; set; } = 5_000_000;
+	public string BaseDirectoryPath { get; set; } = string.Empty;
+	public string FileTypes { get; set; } = "*.cs";
 }
