@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace FileConcatenator;
-
 internal class Program
 {
 	private static void Main(string[] args)
@@ -18,7 +16,7 @@ internal class Program
 	{
 		services.AddSingleton<ConfigurationService>();
 		services.AddSingleton<ConcatenationService>();
-		services.AddSingleton<SpectreUI>();
 		services.AddSingleton<Controller>();
+		services.AddSingleton<SpectreUI>();
 	}
 }

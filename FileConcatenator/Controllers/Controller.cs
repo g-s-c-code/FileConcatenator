@@ -1,8 +1,6 @@
 ﻿using System.Text;
 using Spectre.Console;
 
-namespace FileConcatenator;
-
 public class Controller
 {
 	private readonly SpectreUI _ui;
@@ -94,20 +92,20 @@ public class Controller
 	{
 		var commands = new[]
 		{
-			"[cd <directory>] Change Directory",
+			"cd <directory> - Change Directory",
 			"",
-			"[1] Concatenate & Copy To Clipboard",
-			"[2] Set Clipboard Limit",
-			"[3] Set File Types",
-			"[4] Set Base Path (enter manually)",
-			"[5] Set Base Path to Current Directory",
-			"[6] Show Hidden Files",
+			"1 - Concatenate & Copy To Clipboard",
+			"2 - Set Clipboard Limit",
+			"3 - Set File Types",
+			"4 - Set Base Path (enter manually)",
+			"5 - Set Base Path to Current Directory",
+			"6 - Show Hidden Files",
 			"",
-			"[H] Help",
-			"[Q] Quit"
+			"H - Help",
+			"Q - Quit"
 		};
 
-		return string.Join(Environment.NewLine, commands.Select(Markup.Escape));
+		return string.Join(Environment.NewLine, commands);
 	}
 
 	private string BuildSettingsHeaders() => string.Join(
@@ -142,24 +140,24 @@ public class Controller
 			},
 			["Commands"] = new[]
 			{
-				"[cd <directory>] - Change to the specified directory.",
-				"[1] Concatenate & Copy - Combine files and copy to clipboard.",
-				"[2] Set Clipboard Limit - Set max characters for clipboard.",
-				"[3] Set File Types - Choose which file types to concatenate.",
-				"[4] Set Base Path - Change base directory manually.",
-				"[5] Set Base Path to Current Directory - Use current directory as base.",
-				"[6] Show Hidden Files - Toggle visibility of hidden files.",
-				"[H] Help - Show this help message.",
-				"[Q] Quit - Exit the application."
+				"cd <directory> - Change to the specified directory",
+				"1 - Concatenate & Copy - Combine files and copy to clipboard",
+				"2 - Set Clipboard Limit - Set max characters for clipboard",
+				"3 - Set File Types - Choose which file types to concatenate",
+				"4 - Set Base Path - Change base directory manually",
+				"5 - Set Base Path to Current Directory - Use current directory as base",
+				"6 - Show Hidden Files - Toggle visibility of hidden files",
+				"H - Help - Show this help message",
+				"Q - Quit - Exit the application"
 			},
 			["Tips"] = new[]
 			{
-				"- Use 'cd' to navigate to the desired folder before operations.",
-				"- Set a reasonable clipboard limit to handle large text blocks.",
-				"- Default file types are '*.cs' if none are selected.",
-				"- Hidden files are not shown by default; toggle with [6].",
+				"- Use 'cd' to navigate to the desired folder before operations",
+				"- Set a reasonable clipboard limit to handle large text blocks",
+				"- Default file types are '*.cs' if none are selected",
+				"- Hidden files are not shown by default; toggle with 6",
 				"",
-				"Note: Settings are persistent between sessions."
+				"Note: Settings are persistent between sessions"
 			}
 		};
 
@@ -239,17 +237,13 @@ public class Controller
 
 	private List<string> PromptForFileTypes()
 	{
-		var space = Markup.Escape("[space]");
-		var enter = Markup.Escape("[enter]");
-
 		return AnsiConsole.Prompt(
 			new MultiSelectionPrompt<string>()
-				.Title("\nSelect the file types you wish to concatenate:")
+				.Title("Select the file types you wish to concatenate:")
 				.NotRequired()
 				.PageSize(10)
-				.MoreChoicesText("[white]Move up and down to reveal more file types[/]")
-				.InstructionsText(
-					$"[white]Press [steelblue1_1]{space}[/] to toggle a file type, [steelblue1_1]{enter}[/] to accept[/]")
+				.MoreChoicesText("Move up and down to reveal more file types")
+				.InstructionsText("Press SPACE to toggle a file type, ENTER to accept")
 				.AddChoices(_fileTypeChoices));
 	}
 

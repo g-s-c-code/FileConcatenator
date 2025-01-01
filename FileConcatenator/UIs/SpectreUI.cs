@@ -1,8 +1,6 @@
 ﻿using Spectre.Console;
 using Spectre.Console.Rendering;
 
-namespace FileConcatenator;
-
 public class SpectreUI
 {
 	private const string BoldFormat = "bold";
