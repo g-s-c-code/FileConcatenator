@@ -202,7 +202,7 @@ public class Controller
 
 	private void SetShowHiddenFiles()
 	{
-		var showHiddenFiles = GetValidInput("Show hidden files? (y/n): ", new[] { "y", "n" });
+		var showHiddenFiles = GetValidInput("Show hidden files? (y/n): ", ["y", "n"]);
 		_configurationService.SetShowHiddenFiles(showHiddenFiles == "y");
 		_ui.ShowMessageAndWait("Show hidden files setting updated.");
 	}
