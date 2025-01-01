@@ -10,6 +10,7 @@ public class Controller
 	private readonly ConcatenationService _concatenationService;
 	private string _currentDirectory;
 	private static readonly IReadOnlySet<string> _fileTypeChoices = Constants.FileExtensions.SupportedFileTypes;
+	private const int WarningClipboardLimit = 10_000_000;
 
 	public Controller(SpectreUI ui, ConfigurationService configurationService, ConcatenationService concatenationService)
 	{
@@ -37,11 +38,15 @@ public class Controller
 
 	private void ProcessCommand(string command)
 	{
-		switch (command.ToLower())
+		var normalizedCommand = command.ToLower();
+		if (normalizedCommand.StartsWith(Constants.Commands.ChangeDirectoryPrefix))
 		{
-			case var changeDirectoryCommand when changeDirectoryCommand.StartsWith(Constants.Commands.ChangeDirectoryPrefix):
-				ChangeDirectory(changeDirectoryCommand);
-				break;
+			ChangeDirectory(command);
+			return;
+		}
+
+		switch (normalizedCommand)
+		{
 			case Constants.Commands.ConcatenateAndCopy:
 				ConcatenateFilesAndCopyToClipboard();
 				break;
@@ -77,54 +82,49 @@ public class Controller
 		_ui.Clear();
 		_ui.MainLayout(
 			_currentDirectory,
-			GetCommands(),
-			GetSettingsHeaders(),
-			GetCurrentSettings(),
+			BuildCommandList(),
+			BuildSettingsHeaders(),
+			BuildCurrentSettings(),
 			_concatenationService.GetDirectories(_currentDirectory),
 			_concatenationService.GetFiles(_currentDirectory)
 		);
 	}
 
-	private string GetCommands()
+	private string BuildCommandList()
 	{
-		var sb = new StringBuilder()
-			.AppendLine(Markup.Escape("[cd <directory>] Change Directory"))
-			.AppendLine()
-			.AppendLine(Markup.Escape("[1] Concatenate & Copy To Clipboard"))
-			.AppendLine(Markup.Escape("[2] Set Clipboard Limit"))
-			.AppendLine(Markup.Escape("[3] Set File Types"))
-			.AppendLine(Markup.Escape("[4] Set Base Path (enter manually)"))
-			.AppendLine(Markup.Escape("[5] Set Base Path to Current Directory"))
-			.AppendLine(Markup.Escape("[6] Show Hidden Files"))
-			.AppendLine(Markup.Escape("[7] Change Theme"))
-			.AppendLine()
-			.AppendLine(Markup.Escape("[H] Help"))
-			.AppendLine(Markup.Escape("[Q] Quit"));
+		var commands = new[]
+		{
+			"[cd <directory>] Change Directory",
+			"",
+			"[1] Concatenate & Copy To Clipboard",
+			"[2] Set Clipboard Limit",
+			"[3] Set File Types",
+			"[4] Set Base Path (enter manually)",
+			"[5] Set Base Path to Current Directory",
+			"[6] Show Hidden Files",
+			"",
+			"[H] Help",
+			"[Q] Quit"
+		};
 
-		return sb.ToString();
+		return string.Join(Environment.NewLine, commands.Select(Markup.Escape));
 	}
 
-	private string GetSettingsHeaders()
-	{
-		var sb = new StringBuilder()
-			.AppendLine("Clipboard Limit:")
-			.AppendLine("Targeted File Types:")
-			.AppendLine("Base Path:")
-			.Append("Show Hidden Files:");
+	private string BuildSettingsHeaders() => string.Join(
+		Environment.NewLine,
+		"Clipboard Limit:",
+		"Targeted File Types:",
+		"Base Path:",
+		"Show Hidden Files:"
+	);
 
-		return sb.ToString();
-	}
-
-	private string GetCurrentSettings()
-	{
-		var sb = new StringBuilder()
-			.AppendLine(_configurationService.ClipboardCharacterLimit.ToString())
-			.AppendLine(_configurationService.FileTypes)
-			.AppendLine(_configurationService.BaseDirectoryPath)
-			.AppendLine(_configurationService.ShowHiddenFiles ? "Yes" : "No");
-
-		return sb.ToString();
-	}
+	private string BuildCurrentSettings() => string.Join(
+		Environment.NewLine,
+		_configurationService.ClipboardCharacterLimit.ToString(),
+		_configurationService.FileTypes,
+		_configurationService.BaseDirectoryPath,
+		_configurationService.ShowHiddenFiles ? "Yes" : "No"
+	);
 
 	private void SetBasePathToCurrentDirectory()
 	{
@@ -134,59 +134,71 @@ public class Controller
 
 	private void ShowHelp()
 	{
-		var sb = new StringBuilder()
-			.AppendLine("FILE CONCATENATOR")
-			.AppendLine()
-			.AppendLine("Purpose:")
-			.AppendLine("Concatenate text files from a selected directory and copy the combined content to your clipboard.")
-			.AppendLine()
-			.AppendLine("Commands:")
-			.AppendLine("[cd <directory>] - Change to the specified directory.")
-			.AppendLine("[1] Concatenate & Copy - Combine files and copy to clipboard.")
-			.AppendLine("[2] Set Clipboard Limit - Set max characters for clipboard.")
-			.AppendLine("[3] Set File Types - Choose which file types to concatenate.")
-			.AppendLine("[4] Set Base Path - Change base directory manually.")
-			.AppendLine("[5] Set Base Path to Current Directory - Use current directory as base.")
-			.AppendLine("[6] Show Hidden Files - Toggle visibility of hidden files.")
-			.AppendLine("[H] Help - Show this help message.")
-			.AppendLine("[Q] Quit - Exit the application.")
-			.AppendLine()
-			.AppendLine("Tips:")
-			.AppendLine("- Use 'cd' to navigate to the desired folder before operations.")
-			.AppendLine("- Set a reasonable clipboard limit to handle large text blocks.")
-			.AppendLine("- Default file types are '*.cs' if none are selected.")
-			.AppendLine("- Hidden files are not shown by default; toggle with [6].")
-			.AppendLine()
-			.Append("Note: Settings are persistent between sessions.");
+		var helpSections = new Dictionary<string, string[]>
+		{
+			["Purpose"] = new[]
+			{
+				"Concatenate text files from a selected directory and copy the combined content to your clipboard."
+			},
+			["Commands"] = new[]
+			{
+				"[cd <directory>] - Change to the specified directory.",
+				"[1] Concatenate & Copy - Combine files and copy to clipboard.",
+				"[2] Set Clipboard Limit - Set max characters for clipboard.",
+				"[3] Set File Types - Choose which file types to concatenate.",
+				"[4] Set Base Path - Change base directory manually.",
+				"[5] Set Base Path to Current Directory - Use current directory as base.",
+				"[6] Show Hidden Files - Toggle visibility of hidden files.",
+				"[H] Help - Show this help message.",
+				"[Q] Quit - Exit the application."
+			},
+			["Tips"] = new[]
+			{
+				"- Use 'cd' to navigate to the desired folder before operations.",
+				"- Set a reasonable clipboard limit to handle large text blocks.",
+				"- Default file types are '*.cs' if none are selected.",
+				"- Hidden files are not shown by default; toggle with [6].",
+				"",
+				"Note: Settings are persistent between sessions."
+			}
+		};
 
-		_ui.ShowMessageAndWait(sb.ToString());
+		var helpText = new StringBuilder("FILE CONCATENATOR\n\n");
+		foreach (var section in helpSections)
+		{
+			helpText.AppendLine($"{section.Key}:")
+				   .AppendLine(string.Join(Environment.NewLine, section.Value))
+				   .AppendLine();
+		}
+
+		_ui.ShowMessageAndWait(helpText.ToString());
 	}
 
 	private void ChangeDirectory(string command)
 	{
 		var parts = command.Split(' ', 2);
-		if (parts.Length == 2)
-		{
-			var newDirectory = Path.GetFullPath(Path.Combine(_currentDirectory, parts[1]));
-			if (Directory.Exists(newDirectory))
-			{
-				_currentDirectory = newDirectory;
-			}
-			else
-			{
-				_ui.ShowMessageAndWait("Error: Directory does not exist.");
-			}
-		}
-		else
+		if (parts.Length != 2)
 		{
 			_ui.ShowMessageAndWait("Error: Invalid command.");
+			return;
 		}
+
+		var newDirectory = Path.GetFullPath(Path.Combine(_currentDirectory, parts[1]));
+		if (!Directory.Exists(newDirectory))
+		{
+			_ui.ShowMessageAndWait("Error: Directory does not exist.");
+			return;
+		}
+
+		_currentDirectory = newDirectory;
 	}
 
 	private void ConcatenateFilesAndCopyToClipboard()
 	{
 		var result = _concatenationService.ConcatenateFiles(_currentDirectory);
-		var message = result.Success ? "Files concatenated and copied to clipboard." : $"Error: {result.Message}";
+		var message = result.Success
+			? "Files concatenated and copied to clipboard."
+			: $"Error: {result.Message}";
 		_ui.ShowMessageAndWait(message);
 	}
 
@@ -200,60 +212,66 @@ public class Controller
 	private void SetBasePath()
 	{
 		var newBasePath = _ui.GetInput("Enter new base path: ");
-		if (Directory.Exists(newBasePath))
-		{
-			_configurationService.SetBaseDirectoryPath(newBasePath);
-			_currentDirectory = newBasePath;
-			_ui.ShowMessageAndWait("Base path updated.");
-		}
-		else
+		if (!Directory.Exists(newBasePath))
 		{
 			_ui.ShowMessageAndWait("Error: Directory does not exist.");
+			return;
 		}
+
+		_configurationService.SetBaseDirectoryPath(newBasePath);
+		_currentDirectory = newBasePath;
+		_ui.ShowMessageAndWait("Base path updated.");
 	}
 
 	private void SetFileTypes()
 	{
-		var space = Markup.Escape("[space]");
-		var enter = Markup.Escape("[enter]");
-
-		var fileTypes = AnsiConsole.Prompt(
-			new MultiSelectionPrompt<string>()
-				.Title("\nSelect the file types you wish to concatenate:")
-				.NotRequired()
-				.PageSize(10)
-				.MoreChoicesText("[white]Move up and down to reveal more file types[/]")
-				.InstructionsText($"[white]Press [steelblue1_1]{space}[/] to toggle a file type, [steelblue1_1]{enter}[/] to accept[/]")
-				.AddChoices(_fileTypeChoices));
-
+		var fileTypes = PromptForFileTypes();
 		if (fileTypes.Count == 0)
 		{
 			fileTypes.Add(Constants.FileExtensions.DefaultFileType);
-			_ui.ShowMessageAndWait($"No file types were selected, so '{Constants.FileExtensions.DefaultFileType}' was set as the default.\n");
+			_ui.ShowMessageAndWait(
+				$"No file types were selected, so '{Constants.FileExtensions.DefaultFileType}' was set as the default.\n");
 		}
 
 		_configurationService.SetFileTypes(string.Join(", ", fileTypes));
 		_ui.ShowMessageAndWait("Targeted file types updated.");
 	}
 
+	private List<string> PromptForFileTypes()
+	{
+		var space = Markup.Escape("[space]");
+		var enter = Markup.Escape("[enter]");
+
+		return AnsiConsole.Prompt(
+			new MultiSelectionPrompt<string>()
+				.Title("\nSelect the file types you wish to concatenate:")
+				.NotRequired()
+				.PageSize(10)
+				.MoreChoicesText("[white]Move up and down to reveal more file types[/]")
+				.InstructionsText(
+					$"[white]Press [steelblue1_1]{space}[/] to toggle a file type, [steelblue1_1]{enter}[/] to accept[/]")
+				.AddChoices(_fileTypeChoices));
+	}
+
 	private void SetClipboardLimit()
 	{
-		const int warningLimit = 10_000_000;
-		_ui.ShowMessage($"Warning: Setting a clipboard limit above {warningLimit} characters might cause issues on some systems.\n");
+		_ui.ShowMessage(
+			$"Warning: Setting a clipboard limit above {WarningClipboardLimit} characters might cause issues on some systems.\n");
 
-		var input = _ui.GetInput($"Enter new clipboard character limit (current: {_configurationService.ClipboardCharacterLimit}): ");
-		if (int.TryParse(input, out var newLimit) && newLimit > 0)
-		{
-			_configurationService.SetClipboardCharacterLimit(newLimit);
-			var warningMessage = newLimit > warningLimit
-				? $"Warning: Setting a clipboard limit above {warningLimit} characters might cause issues on some systems."
-				: $"Clipboard character limit updated to {newLimit}.";
-			_ui.ShowMessageAndWait(warningMessage);
-		}
-		else
+		var input = _ui.GetInput(
+			$"Enter new clipboard character limit (current: {_configurationService.ClipboardCharacterLimit}): ");
+
+		if (!int.TryParse(input, out var newLimit) || newLimit <= 0)
 		{
 			_ui.ShowMessageAndWait("Error: Invalid clipboard limit. Please enter a positive integer.");
+			return;
 		}
+
+		_configurationService.SetClipboardCharacterLimit(newLimit);
+		var warningMessage = newLimit > WarningClipboardLimit
+			? $"Warning: Setting a clipboard limit above {WarningClipboardLimit} characters might cause issues on some systems."
+			: $"Clipboard character limit updated to {newLimit}.";
+		_ui.ShowMessageAndWait(warningMessage);
 	}
 
 	private string GetValidInput(string prompt, string[] validOptions)
