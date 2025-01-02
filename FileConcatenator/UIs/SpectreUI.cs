@@ -52,7 +52,8 @@ public class SpectreUI
 		var mainLayout = new Table()
 			.AddColumns(new TableColumn(leftPanel), new TableColumn(rightPanel))
 			.BorderColor(TextColor)
-			.Border(TableBorder.Horizontal);
+			.Border(TableBorder.Horizontal)
+			.Title("FileConcatenator - Text Concatenating Utility");
 
 		AnsiConsole.Write(mainLayout);
 	}
@@ -81,16 +82,6 @@ public class SpectreUI
 	#endregion
 
 	#region Directory Display
-	public IRenderable DisplayTree(string header, IEnumerable<string> items)
-	{
-		var tree = new Tree(header) { Style = new Style(foreground: TreeColor) };
-		foreach (var item in items)
-		{
-			tree.AddNode(Text(Markup.Escape(item)));
-		}
-		return tree;
-	}
-
 	private Panel CreateRightPanel(
 		string currentDirectory,
 		IEnumerable<string> directories,
@@ -122,13 +113,28 @@ public class SpectreUI
 	{
 		var table = new Table { Border = TableBorder.Simple };
 
-		table.AddColumn(new TableColumn(DisplayTree(Text("Folders:").ToUpper(), directories)));
-		table.AddColumn(new TableColumn(DisplayTree(Text("Files:").ToUpper(), files)));
+		table.AddColumn(new TableColumn(BuildTree(Text("Folders:").ToUpper(), directories)));
+		table.AddColumn(new TableColumn(BuildTree(Text("Files:").ToUpper(), files)));
 
 		table.Columns[0].Padding(0, 0);
 		table.Columns[1].Padding(0, 0);
 
 		return table;
+	}
+
+	private IRenderable BuildTree(string header, IEnumerable<string> items)
+	{
+		var tree = new Tree(new Markup(header, Color.White))
+		{
+			Style = new Style(foreground: Color.RosyBrown)
+		};
+
+		foreach (var node in items.DefaultIfEmpty("[dim italic]None[/]").Select(item => $"[bold white]{item}[/]"))
+		{
+			tree.AddNode(node);
+		}
+
+		return tree;
 	}
 	#endregion
 }
