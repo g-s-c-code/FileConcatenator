@@ -99,17 +99,17 @@ public class Controller
 	private string BuildCommandList() => string.Join(
 		Environment.NewLine,
 		[
-			"cd <directory> - Change Directory",
+			$"{_ui.Text("[[cd <path>]]", Color.SteelBlue)} - Change Directory",
 			"",
-			"1 - Concatenate & Copy To Clipboard",
-			"2 - Set Clipboard Limit",
-			"3 - Set File Types",
-			"4 - Set Base Path (enter manually)",
-			"5 - Set Base Path to Current Directory",
-			"6 - Show Hidden Files",
+			$"{_ui.Text("[[1]]", Color.SteelBlue)} - Concatenate & Copy To Clipboard",
+			$"{_ui.Text("[[2]]", Color.SteelBlue)} - Set Clipboard Limit",
+			$"{_ui.Text("[[3]]", Color.SteelBlue)} - Set File Types",
+			$"{_ui.Text("[[4]]", Color.SteelBlue)} - Set Base Path (enter manually)",
+			$"{_ui.Text("[[5]]", Color.SteelBlue)} - Set Base Path to Current Directory",
+			$"{_ui.Text("[[6]]", Color.SteelBlue)} - Show Hidden Files",
 			"",
-			"H - Help",
-			"Q - Quit"
+			$"{_ui.Text("[[H]]", Color.SteelBlue)} - Help",
+			$"{_ui.Text("[[Q]]", Color.SteelBlue)} - Quit"
 		]);
 
 	private string BuildSettingsHeaders() => string.Join(
@@ -121,14 +121,14 @@ public class Controller
 			"Show Hidden Files:"
 		]);
 
-	private string BuildCurrentSettings() => string.Join(
+	private string BuildCurrentSettings() => _ui.Text(string.Join(
 		Environment.NewLine,
 		[
 			_configurationService.ClipboardCharacterLimit.ToString(),
 			_configurationService.FileTypes,
-			_configurationService.BaseDirectoryPath,
+			_configurationService.BaseDirectoryPath.ToUpper(),
 			_configurationService.ShowHiddenFiles ? "Yes" : "No"
-		]);
+		]), Color.IndianRed);
 	#endregion
 
 	#region Command Handlers

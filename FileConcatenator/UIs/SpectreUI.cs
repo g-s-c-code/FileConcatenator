@@ -23,7 +23,7 @@ public class SpectreUI
 		Console.ReadKey();
 	}
 
-	public string GetInput(string prompt) => AnsiConsole.Ask<string>(prompt);
+	public string GetInput(string prompt) => AnsiConsole.Ask<string>(Text(prompt));
 	#endregion
 
 	#region Text Formatting
@@ -122,8 +122,8 @@ public class SpectreUI
 	{
 		var table = new Table { Border = TableBorder.Simple };
 
-		table.AddColumn(new TableColumn(DisplayTree("Folders:".ToUpper(), directories)));
-		table.AddColumn(new TableColumn(DisplayTree("Files:".ToUpper(), files)));
+		table.AddColumn(new TableColumn(DisplayTree(Text("Folders:").ToUpper(), directories)));
+		table.AddColumn(new TableColumn(DisplayTree(Text("Files:").ToUpper(), files)));
 
 		table.Columns[0].Padding(0, 0);
 		table.Columns[1].Padding(0, 0);
