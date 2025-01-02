@@ -41,8 +41,8 @@ public class SpectreUI
 	public void MainLayout(string currentDirectory, string commands, string settingsHeaders,
 		string currentSettings, IEnumerable<string> directoriesTree, IEnumerable<string> filesTree)
 	{
-		var rightColumn = CreateRightColumn(currentDirectory, directoriesTree, filesTree);
 		var leftColumn = CreateLeftColumn(settingsHeaders, currentSettings, commands);
+		var rightColumn = DirectoryContentUI(CurrentDirectoryPathUI(), CurrentDirectoryContentUI(directoriesTree, filesTree));
 		var mainLayout = new Table()
 			.AddColumns(
 				new TableColumn(leftColumn),
@@ -56,7 +56,7 @@ public class SpectreUI
 	{
 		return new Table()
 			.AddColumns(
-				new TableColumn(CurrentDirectoryPathUI()),
+				new TableColumn(CurrentDirectoryPathUI(currentDirectory)),
 				new TableColumn(""))
 			.AddRow(
 				DisplayTree(Header("\nFolders:"), directoriesTree),
@@ -64,15 +64,54 @@ public class SpectreUI
 			.Border(TableBorder.None);
 	}
 
+	private Panel DirectoryContentUI(Panel currentDirectoryPathUI, Table currentDirectoryContentUI)
+	{
+		return new Panel(new Rows([currentDirectoryPathUI, currentDirectoryContentUI]))
+		{
+			BorderStyle = Color.LightSkyBlue1,
+			Header = new PanelHeader("[[ Current Directory ]]".ToUpper()),
+			Padding = new Padding(0, 1, 0, 0),
+		};
+	}
+
 	private Panel CurrentDirectoryPathUI()
 	{
 		var currentDirectory = new TextPath(Directory.GetCurrentDirectory().ToUpper())
+			.RootColor(Color.White)
+			.SeparatorColor(Color.RosyBrown)
+			.StemColor(Color.White)
+			.LeafColor(Color.White);
+
+		return new Panel(currentDirectory)
+		{
+			Border = BoxBorder.None,
+		};
+	}
+
+	private Table CurrentDirectoryContentUI(IEnumerable<string> directories, IEnumerable<string> files)
+	{
+		var table = new Table
+		{
+			Border = TableBorder.Simple,
+		};
+
+		table.AddColumn(new TableColumn(DisplayTree("Folders:".ToUpper(), directories)));
+		table.AddColumn(new TableColumn(DisplayTree("Files:".ToUpper(), files)));
+		table.Columns[0].Padding(0, 0);
+		table.Columns[1].Padding(0, 0);
+
+		return table;
+	}
+
+	private Panel CurrentDirectoryPathUI(string currentDirectory)
+	{
+		var textPath = new TextPath(currentDirectory.ToUpper())
 			.SeparatorColor(Color.RosyBrown)
 			.RootColor(_textColor)
 			.StemColor(_textColor)
 			.LeafColor(_textColor);
 
-		return new Panel(currentDirectory)
+		return new Panel(textPath)
 		{
 			Padding = new Padding(0),
 			Border = BoxBorder.None,
