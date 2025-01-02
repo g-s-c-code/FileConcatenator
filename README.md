@@ -5,7 +5,7 @@
 **FileConcatenator** is a utility designed to streamline the process of concatenating multiple code or text files into a single output. This tool is meant to help developers to quickly gather code from various files.
 
 ## Preview
-<img src="https://raw.githubusercontent.com/g-s-c-code/FileConcatenator/master/fileconcatenator.png" />
+<img src="https://raw.githubusercontent.com/g-s-c-code/FileConcatenator/master/fileconcatenator.webp" />
 
 ## Features
 
