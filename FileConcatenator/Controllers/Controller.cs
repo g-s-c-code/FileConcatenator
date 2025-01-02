@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Spectre.Console;
+using static Constants;
 
 public class Controller
 {
@@ -8,7 +9,7 @@ public class Controller
 	private readonly ConfigurationService _configurationService;
 	private readonly ConcatenationService _concatenationService;
 	private string _currentDirectory;
-	private static readonly IReadOnlySet<string> _fileTypeChoices = Constants.FileExtensions.SupportedFileTypes;
+	private static readonly IReadOnlySet<string> _fileTypeChoices = FileExtensions.SupportedFileTypes;
 	private const int WarningClipboardLimit = 10_000_000;
 	#endregion
 
@@ -42,7 +43,7 @@ public class Controller
 	private void ProcessCommand(string command)
 	{
 		var normalizedCommand = command.ToLower();
-		if (normalizedCommand.StartsWith(Constants.Commands.ChangeDirectoryPrefix))
+		if (normalizedCommand.StartsWith(Commands.ChangeDirectoryPrefix))
 		{
 			ChangeDirectory(command);
 			return;
@@ -50,28 +51,28 @@ public class Controller
 
 		switch (normalizedCommand)
 		{
-			case Constants.Commands.ConcatenateAndCopy:
+			case Commands.ConcatenateAndCopy:
 				ConcatenateFilesAndCopyToClipboard();
 				break;
-			case Constants.Commands.SetClipboardLimit:
+			case Commands.SetClipboardLimit:
 				SetClipboardLimit();
 				break;
-			case Constants.Commands.SetFileTypes:
+			case Commands.SetFileTypes:
 				SetFileTypes();
 				break;
-			case Constants.Commands.SetBasePathManual:
+			case Commands.SetBasePathManual:
 				SetBasePath();
 				break;
-			case Constants.Commands.SetBasePathCurrent:
+			case Commands.SetBasePathCurrent:
 				SetBasePathToCurrentDirectory();
 				break;
-			case Constants.Commands.ShowHiddenFiles:
+			case Commands.ShowHiddenFiles:
 				SetShowHiddenFiles();
 				break;
-			case Constants.Commands.Help:
+			case Commands.Help:
 				ShowHelp();
 				break;
-			case Constants.Commands.Quit:
+			case Commands.Quit:
 				Environment.Exit(0);
 				break;
 			default:
@@ -191,9 +192,9 @@ public class Controller
 		var fileTypes = PromptForFileTypes();
 		if (fileTypes.Count == 0)
 		{
-			fileTypes.Add(Constants.FileExtensions.DefaultFileType);
+			fileTypes.Add(FileExtensions.DefaultFileType);
 			_ui.ShowMessageAndWait(
-				$"No file types were selected, so '{Constants.FileExtensions.DefaultFileType}' was set as the default.\n");
+				$"No file types were selected, so '{FileExtensions.DefaultFileType}' was set as the default.\n");
 		}
 
 		_configurationService.SetFileTypes(string.Join(", ", fileTypes));
