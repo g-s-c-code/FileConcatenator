@@ -3,13 +3,16 @@ using Spectre.Console;
 
 public class Controller
 {
+	#region Fields and Constants
 	private readonly SpectreUI _ui;
 	private readonly ConfigurationService _configurationService;
 	private readonly ConcatenationService _concatenationService;
 	private string _currentDirectory;
 	private static readonly IReadOnlySet<string> _fileTypeChoices = Constants.FileExtensions.SupportedFileTypes;
 	private const int WarningClipboardLimit = 10_000_000;
+	#endregion
 
+	#region Initialization
 	public Controller(SpectreUI ui, ConfigurationService configurationService, ConcatenationService concatenationService)
 	{
 		_ui = ui;
@@ -17,7 +20,9 @@ public class Controller
 		_concatenationService = concatenationService;
 		_currentDirectory = _configurationService.BaseDirectoryPath;
 	}
+	#endregion
 
+	#region Main Application Loop
 	public void Run()
 	{
 		while (true)
@@ -74,7 +79,9 @@ public class Controller
 				break;
 		}
 	}
+	#endregion
 
+	#region UI Rendering
 	private void RenderUI()
 	{
 		_ui.Clear();
@@ -88,10 +95,9 @@ public class Controller
 		);
 	}
 
-	private string BuildCommandList()
-	{
-		var commands = new[]
-		{
+	private string BuildCommandList() => string.Join(
+		Environment.NewLine,
+		[
 			"cd <directory> - Change Directory",
 			"",
 			"1 - Concatenate & Copy To Clipboard",
@@ -103,26 +109,76 @@ public class Controller
 			"",
 			"H - Help",
 			"Q - Quit"
-		};
-
-		return string.Join(Environment.NewLine, commands);
-	}
+		]);
 
 	private string BuildSettingsHeaders() => string.Join(
 		Environment.NewLine,
-		"Clipboard Limit:",
-		"Targeted File Types:",
-		"Base Path:",
-		"Show Hidden Files:"
-	);
+		[
+			"Clipboard Limit:",
+			"Targeted File Types:",
+			"Base Path:",
+			"Show Hidden Files:"
+		]);
 
 	private string BuildCurrentSettings() => string.Join(
 		Environment.NewLine,
-		_configurationService.ClipboardCharacterLimit.ToString(),
-		_configurationService.FileTypes,
-		_configurationService.BaseDirectoryPath,
-		_configurationService.ShowHiddenFiles ? "Yes" : "No"
-	);
+		[
+			_configurationService.ClipboardCharacterLimit.ToString(),
+			_configurationService.FileTypes,
+			_configurationService.BaseDirectoryPath,
+			_configurationService.ShowHiddenFiles ? "Yes" : "No"
+		]);
+	#endregion
+
+	#region Command Handlers
+	private void ConcatenateFilesAndCopyToClipboard()
+	{
+		var result = _concatenationService.ConcatenateFiles(_currentDirectory);
+		var message = result.Success
+			? "Files concatenated and copied to clipboard."
+			: $"Error: {result.Message}";
+		_ui.ShowMessageAndWait(message);
+	}
+
+	private void ChangeDirectory(string command)
+	{
+		var parts = command.Split(' ', 2);
+		if (parts.Length != 2)
+		{
+			_ui.ShowMessageAndWait("Error: Invalid command.");
+			return;
+		}
+
+		var newDirectory = Path.GetFullPath(Path.Combine(_currentDirectory, parts[1]));
+		if (!Directory.Exists(newDirectory))
+		{
+			_ui.ShowMessageAndWait("Error: Directory does not exist.");
+			return;
+		}
+
+		_currentDirectory = newDirectory;
+	}
+
+	private void SetShowHiddenFiles()
+	{
+		var showHiddenFiles = GetValidInput("Show hidden files? (y/n): ", ["y", "n"]);
+		_configurationService.SetShowHiddenFiles(showHiddenFiles == "y");
+		_ui.ShowMessageAndWait("Show hidden files setting updated.");
+	}
+
+	private void SetBasePath()
+	{
+		var newBasePath = _ui.GetInput("Enter new base path: ");
+		if (!Directory.Exists(newBasePath))
+		{
+			_ui.ShowMessageAndWait("Error: Directory does not exist.");
+			return;
+		}
+
+		_configurationService.SetBaseDirectoryPath(newBasePath);
+		_currentDirectory = newBasePath;
+		_ui.ShowMessageAndWait("Base path updated.");
+	}
 
 	private void SetBasePathToCurrentDirectory()
 	{
@@ -130,6 +186,43 @@ public class Controller
 		_ui.ShowMessageAndWait($"Base path updated to the current directory: {_currentDirectory}");
 	}
 
+	private void SetFileTypes()
+	{
+		var fileTypes = PromptForFileTypes();
+		if (fileTypes.Count == 0)
+		{
+			fileTypes.Add(Constants.FileExtensions.DefaultFileType);
+			_ui.ShowMessageAndWait(
+				$"No file types were selected, so '{Constants.FileExtensions.DefaultFileType}' was set as the default.\n");
+		}
+
+		_configurationService.SetFileTypes(string.Join(", ", fileTypes));
+		_ui.ShowMessageAndWait("Targeted file types updated.");
+	}
+
+	private void SetClipboardLimit()
+	{
+		_ui.ShowMessage(
+			$"Warning: Setting a clipboard limit above {WarningClipboardLimit} characters might cause issues on some systems.\n");
+
+		var input = _ui.GetInput(
+			$"Enter new clipboard character limit (current: {_configurationService.ClipboardCharacterLimit}): ");
+
+		if (!int.TryParse(input, out var newLimit) || newLimit <= 0)
+		{
+			_ui.ShowMessageAndWait("Error: Invalid clipboard limit. Please enter a positive integer.");
+			return;
+		}
+
+		_configurationService.SetClipboardCharacterLimit(newLimit);
+		var warningMessage = newLimit > WarningClipboardLimit
+			? $"Warning: Setting a clipboard limit above {WarningClipboardLimit} characters might cause issues on some systems."
+			: $"Clipboard character limit updated to {newLimit}.";
+		_ui.ShowMessageAndWait(warningMessage);
+	}
+	#endregion
+
+	#region Help System
 	private void ShowHelp()
 	{
 		var helpSections = new Dictionary<string, string[]>
@@ -171,70 +264,9 @@ public class Controller
 
 		_ui.ShowMessageAndWait(helpText.ToString());
 	}
+	#endregion
 
-	private void ChangeDirectory(string command)
-	{
-		var parts = command.Split(' ', 2);
-		if (parts.Length != 2)
-		{
-			_ui.ShowMessageAndWait("Error: Invalid command.");
-			return;
-		}
-
-		var newDirectory = Path.GetFullPath(Path.Combine(_currentDirectory, parts[1]));
-		if (!Directory.Exists(newDirectory))
-		{
-			_ui.ShowMessageAndWait("Error: Directory does not exist.");
-			return;
-		}
-
-		_currentDirectory = newDirectory;
-	}
-
-	private void ConcatenateFilesAndCopyToClipboard()
-	{
-		var result = _concatenationService.ConcatenateFiles(_currentDirectory);
-		var message = result.Success
-			? "Files concatenated and copied to clipboard."
-			: $"Error: {result.Message}";
-		_ui.ShowMessageAndWait(message);
-	}
-
-	private void SetShowHiddenFiles()
-	{
-		var showHiddenFiles = GetValidInput("Show hidden files? (y/n): ", ["y", "n"]);
-		_configurationService.SetShowHiddenFiles(showHiddenFiles == "y");
-		_ui.ShowMessageAndWait("Show hidden files setting updated.");
-	}
-
-	private void SetBasePath()
-	{
-		var newBasePath = _ui.GetInput("Enter new base path: ");
-		if (!Directory.Exists(newBasePath))
-		{
-			_ui.ShowMessageAndWait("Error: Directory does not exist.");
-			return;
-		}
-
-		_configurationService.SetBaseDirectoryPath(newBasePath);
-		_currentDirectory = newBasePath;
-		_ui.ShowMessageAndWait("Base path updated.");
-	}
-
-	private void SetFileTypes()
-	{
-		var fileTypes = PromptForFileTypes();
-		if (fileTypes.Count == 0)
-		{
-			fileTypes.Add(Constants.FileExtensions.DefaultFileType);
-			_ui.ShowMessageAndWait(
-				$"No file types were selected, so '{Constants.FileExtensions.DefaultFileType}' was set as the default.\n");
-		}
-
-		_configurationService.SetFileTypes(string.Join(", ", fileTypes));
-		_ui.ShowMessageAndWait("Targeted file types updated.");
-	}
-
+	#region Utility Methods
 	private List<string> PromptForFileTypes()
 	{
 		return AnsiConsole.Prompt(
@@ -245,27 +277,6 @@ public class Controller
 				.MoreChoicesText("Move up and down to reveal more file types")
 				.InstructionsText("Press SPACE to toggle a file type, ENTER to accept")
 				.AddChoices(_fileTypeChoices));
-	}
-
-	private void SetClipboardLimit()
-	{
-		_ui.ShowMessage(
-			$"Warning: Setting a clipboard limit above {WarningClipboardLimit} characters might cause issues on some systems.\n");
-
-		var input = _ui.GetInput(
-			$"Enter new clipboard character limit (current: {_configurationService.ClipboardCharacterLimit}): ");
-
-		if (!int.TryParse(input, out var newLimit) || newLimit <= 0)
-		{
-			_ui.ShowMessageAndWait("Error: Invalid clipboard limit. Please enter a positive integer.");
-			return;
-		}
-
-		_configurationService.SetClipboardCharacterLimit(newLimit);
-		var warningMessage = newLimit > WarningClipboardLimit
-			? $"Warning: Setting a clipboard limit above {WarningClipboardLimit} characters might cause issues on some systems."
-			: $"Clipboard character limit updated to {newLimit}.";
-		_ui.ShowMessageAndWait(warningMessage);
 	}
 
 	private string GetValidInput(string prompt, string[] validOptions)
@@ -281,4 +292,5 @@ public class Controller
 		} while (!validOptions.Contains(input));
 		return input;
 	}
+	#endregion
 }
